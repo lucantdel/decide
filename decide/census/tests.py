@@ -82,6 +82,21 @@ class CensusTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 204)
         self.assertEqual(0, Census.objects.count())
 
+    def test_positive_export_to_xml(self):
+        response = self.client.get('/census/export-to-xml/', format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['content-type'], 'application/xml')
+
+        # Verificar la presencia de elementos clave en el XML
+        expected_elements = ['<census>', '<entry>', '<voting_id>1</voting_id>', '<voter_id>1</voter_id>', '</entry>', '</census>']
+        for element in expected_elements:
+            self.assertIn(element, response.content.decode())
+
+    def test_admin_access(self):
+        self.client.login(username='admin', password='admin')
+        response = self.client.get('/census/export-to-xml/', format='json')
+        self.assertEqual(response.status_code, 200)
+
 
 class CensusTest(StaticLiveServerTestCase):
     def setUp(self):

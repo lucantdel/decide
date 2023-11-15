@@ -12,6 +12,38 @@ from rest_framework.status import (
 
 from base.perms import UserIsStaff
 from .models import Census
+from django.db.utils import IntegrityError
+from django.core.exceptions import ObjectDoesNotExist
+from base.perms import UserIsStaff
+from .models import Census
+
+import csv
+import xml.etree.ElementTree as ET
+from django.http import HttpResponse
+
+class CensusExportationToXML():
+
+    @staticmethod
+    def export_to_xml(request):
+        census = Census.objects.all()
+
+        # Crear el elemento raíz del documento XML
+        root = ET.Element("census")
+
+        # Crear elementos XML para cada entrada en el censo
+        for row in census:
+            census_entry = ET.SubElement(root, "entry")
+            voting_id_element = ET.SubElement(census_entry, "voting_id")
+            voting_id_element.text = str(row.voting_id)
+            voter_id_element = ET.SubElement(census_entry, "voter_id")
+            voter_id_element.text = str(row.voter_id)
+
+        # Convertir el árbol XML a una cadena y configurar la respuesta HTTP
+        xml_data = ET.tostring(root, encoding="utf-8", method="xml")
+        response = HttpResponse(xml_data, content_type="application/xml")
+        response["Content-Disposition"] = 'attachment; filename="censo.xml"'
+
+        return response
 
 
 class CensusCreate(generics.ListCreateAPIView):
