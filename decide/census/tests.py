@@ -82,6 +82,7 @@ class CensusTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 204)
         self.assertEqual(0, Census.objects.count())
 
+class CensusExportation:
     def test_positive_export_to_xml(self):
         response = self.client.get('/census/export-to-xml/', format='json')
         self.assertEqual(response.status_code, 200)

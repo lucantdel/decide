@@ -1,8 +1,16 @@
 from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
+from django.http import HttpResponse
+from django.contrib.auth.decorators import user_passes_test
+from django.shortcuts import render, get_object_or_404
+
 from rest_framework import generics
 from rest_framework.response import Response
+from rest_framework import generics, status
+from rest_framework.views import APIView
+from rest_framework.authtoken.models import Token
 from rest_framework.status import (
+        HTTP_200_OK as ST_200,
         HTTP_201_CREATED as ST_201,
         HTTP_204_NO_CONTENT as ST_204,
         HTTP_400_BAD_REQUEST as ST_400,
@@ -12,14 +20,7 @@ from rest_framework.status import (
 
 from base.perms import UserIsStaff
 from .models import Census
-from django.db.utils import IntegrityError
-from django.core.exceptions import ObjectDoesNotExist
-from base.perms import UserIsStaff
-from .models import Census
-
-import csv
 import xml.etree.ElementTree as ET
-from django.http import HttpResponse
 
 class CensusExportationToXML():
 
@@ -44,6 +45,10 @@ class CensusExportationToXML():
         response["Content-Disposition"] = 'attachment; filename="censo.xml"'
 
         return response
+
+    @staticmethod
+    def export_page(request):
+        return render(request, 'export_xml.html')
 
 
 class CensusCreate(generics.ListCreateAPIView):
