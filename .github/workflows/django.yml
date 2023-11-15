@@ -1,10 +1,18 @@
-name: Python application
+name: Build Test
 
 on:
   push:
     branches:
       - develop
       - master
+  pull_request:
+    branches:
+    - develop
+    - master
+  workflow_call:
+    secrets:
+      CODACY_PROJECT_TOKEN:
+        required: true
 
 jobs:
   build:
@@ -27,6 +35,8 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
+    - name: Check GitHub Status
+      uses: crazy-max/ghaction-github-status@v4
     - uses: actions/checkout@v3
     - name: Set up Python ${{matrix.pyversion}}
       uses: actions/setup-python@v4
@@ -47,11 +57,10 @@ jobs:
     - name: Run tests
       run: |
         cd decide
-        coverage run --branch --source=. ./manage.py test  --keepdb 
-        coverage xml 
+        coverage run --branch --source=. ./manage.py test  --keepdb
+        coverage xml
     - name: Codacy Coverage Reporter
       uses: codacy/codacy-coverage-reporter-action@v1
       with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           coverage-reports: decide/coverage.xml
-
