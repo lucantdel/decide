@@ -9,9 +9,28 @@ from rest_framework.status import (
         HTTP_401_UNAUTHORIZED as ST_401,
         HTTP_409_CONFLICT as ST_409
 )
-
+from django.shortcuts import render, redirect
 from base.perms import UserIsStaff
 from .models import Census
+from django.views.generic import TemplateView
+
+
+class CensusView(TemplateView):
+    template_name = 'census/index.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        censos = Census.objects.all().order_by('voting_id')
+        censos_por_voting_id = {}
+
+        for censo in censos:
+            voting_id = censo.voting_id
+            if voting_id not in censos_por_voting_id:
+                censos_por_voting_id[voting_id] = []
+            censos_por_voting_id[voting_id].append(censo)
+
+        context['censos_por_voting_id'] = censos_por_voting_id
+        return context
 
 
 class CensusCreate(generics.ListCreateAPIView):
