@@ -1,10 +1,20 @@
 from django.db.utils import IntegrityError
+from django.shortcuts import render
+from django.views.generic import TemplateView
+from django.views.decorators.csrf import csrf_exempt
+from django.views import View
+from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http import HttpResponse
 from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect
+from base.perms import UserIsStaff
+
+from .models import Census
+import xml.etree.ElementTree as ET
 
 from rest_framework import generics
 from rest_framework.response import Response
@@ -20,58 +30,7 @@ from rest_framework.status import (
         HTTP_409_CONFLICT as ST_409
 )
 
-from django.shortcuts import render
-from django.views import View
-from base.perms import UserIsStaff
-from .models import Census
-import xml.etree.ElementTree as ET
 
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-
-
-"""
-@csrf_exempt
-def import_to_xml(request):
-    if request.method == 'POST':
-        try:
-            # Verificar si la solicitud tiene el atributo content_type
-            if request.content_type == 'application/xml':
-                # Obtener el archivo XML del cuerpo de la solicitud
-                xml_file = request.FILES.get('censusFile')
-
-                # Verificar si se proporcionó un archivo
-                if xml_file:
-                    # Parsear el archivo XML
-                    tree = ET.parse(xml_file)
-                    root = tree.getroot()
-
-                    # Procesar los elementos XML y realizar la importación
-                    for entry in root.findall('entry'):
-                        voting_id = entry.find('voting_id').text
-                        voter_id = entry.find('voter_id').text
-
-                        # Crear una nueva entrada en el censo o actualizar según sea necesario
-                        Census.objects.update_or_create(
-                            voting_id=voting_id,
-                            voter_id=voter_id,
-                            defaults={'voting_id': voting_id, 'voter_id': voter_id}
-                        )
-
-                    return JsonResponse({'status': 'success'})
-                else:
-                    return JsonResponse({'status': 'error', 'message': 'No se proporcionó un archivo'}, status=400)
-            else:
-                return JsonResponse({'status': 'error', 'message': 'Tipo de contenido no admitido'}, status=415)
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
-    else:
-        return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
-
-
-            path('importar-xml/', CensusImportationFromXML.import_page, name='import_page'),
-
-"""
 
 class CensusImportationFromXML(View):
     def post(self, request, *args, **kwargs):
@@ -96,12 +55,7 @@ class CensusImportationFromXML(View):
         return render(request, 'import_xml.html')
 
 
-
-
-
-
 class CensusExportationToXML():
-
     @staticmethod
     def export_to_xml(request):
         census = Census.objects.all()
@@ -126,6 +80,24 @@ class CensusExportationToXML():
     @staticmethod
     def export_page(request):
         return render(request, 'export_xml.html')
+
+
+class CensusView(TemplateView):
+    template_name = 'census/index.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        censos = Census.objects.all().order_by('voting_id')
+        censos_por_voting_id = {}
+
+        for censo in censos:
+            voting_id = censo.voting_id
+            if voting_id not in censos_por_voting_id:
+                censos_por_voting_id[voting_id] = []
+            censos_por_voting_id[voting_id].append(censo)
+
+        context['censos_por_voting_id'] = censos_por_voting_id
+        return context
 
 
 class CensusCreate(generics.ListCreateAPIView):
