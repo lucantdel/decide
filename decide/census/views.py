@@ -1,18 +1,85 @@
 from django.db.utils import IntegrityError
+from django.shortcuts import render
+from django.views.generic import TemplateView
+from django.views.decorators.csrf import csrf_exempt
+from django.views import View
+from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.http import HttpResponse
+from django.contrib.auth.decorators import user_passes_test
+from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect
+from base.perms import UserIsStaff
+
+from .models import Census
+import xml.etree.ElementTree as ET
+
 from rest_framework import generics
 from rest_framework.response import Response
+from rest_framework import generics, status
+from rest_framework.views import APIView
+from rest_framework.authtoken.models import Token
 from rest_framework.status import (
+        HTTP_200_OK as ST_200,
         HTTP_201_CREATED as ST_201,
         HTTP_204_NO_CONTENT as ST_204,
         HTTP_400_BAD_REQUEST as ST_400,
         HTTP_401_UNAUTHORIZED as ST_401,
         HTTP_409_CONFLICT as ST_409
 )
-from django.shortcuts import render, redirect
-from base.perms import UserIsStaff
-from .models import Census
-from django.views.generic import TemplateView
+
+
+
+class CensusImportationFromXML(View):
+    def post(self, request, *args, **kwargs):
+        xml_file = request.FILES['xml_file']
+
+        # Parse el archivo XML
+        tree = ET.parse(xml_file)
+        root = tree.getroot()
+
+        # Itera sobre las entradas del censo y guárdalas en la base de datos
+        for entry_element in root.findall('entry'):
+            voting_id = entry_element.find('voting_id').text
+            voter_id = entry_element.find('voter_id').text
+
+            # Verifica si la entrada ya existe para evitar duplicados
+            if not Census.objects.filter(voting_id=voting_id, voter_id=voter_id).exists():
+                Census.objects.create(voting_id=voting_id, voter_id=voter_id)
+
+        return HttpResponse("Census imported successfully.")
+
+    def get(self, request, *args, **kwargs):
+        return render(request, 'import_xml.html')
+
+
+class CensusExportationToXML():
+    @staticmethod
+    def export_to_xml(request):
+        census = Census.objects.all()
+
+        # Crear el elemento raíz del documento XML
+        root = ET.Element("census")
+
+        # Crear elementos XML para cada entrada en el censo
+        for row in census:
+            census_entry = ET.SubElement(root, "entry")
+            voting_id_element = ET.SubElement(census_entry, "voting_id")
+            voting_id_element.text = str(row.voting_id)
+            voter_id_element = ET.SubElement(census_entry, "voter_id")
+            voter_id_element.text = str(row.voter_id)
+
+        # Convertir el árbol XML a una cadena y configurar la respuesta HTTP
+        xml_data = ET.tostring(root, encoding="utf-8", method="xml")
+        response = HttpResponse(xml_data, content_type="application/xml")
+        response["Content-Disposition"] = 'attachment; filename="censo.xml"'
+        return response
+
+    @staticmethod
+    def export_page(request):
+        return render(request, 'export_xml.html')
 
 
 class CensusView(TemplateView):
