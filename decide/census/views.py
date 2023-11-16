@@ -1,5 +1,7 @@
 from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
+from django.http import HttpResponse
+from django.shortcuts import render, get_object_or_404
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -12,7 +14,35 @@ from rest_framework.status import (
 
 from base.perms import UserIsStaff
 from .models import Census
+import csv
 
+class CensusExportCSV(generics.ListAPIView):
+    #permission_classes = (UserIsStaff,)
+
+    def list(self, request, *args, **kwargs):
+        voting_id = self.kwargs['voting_id']
+
+        voters = Census.objects.filter(voting_id=voting_id).values_list('voter_id', flat=True)
+
+        # Crear el objeto HttpResponse con el tipo de contenido adecuado para un archivo CSV
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="voting_{voting_id}_census.csv"'
+
+        # Crear el escritor CSV
+        writer = csv.writer(response)
+
+        # Escribir la fila de encabezados si es necesario
+        #writer.writerow(['voter_id'])
+
+        # Escribir los datos en filas
+        for voter_id in voters:
+            writer.writerow([voter_id])
+
+        return response
+    
+    @staticmethod
+    def export_page(request):
+        return render(request, 'export_csv.html')
 
 class CensusCreate(generics.ListCreateAPIView):
     permission_classes = (UserIsStaff,)

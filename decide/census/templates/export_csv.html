@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Previsualizar y Descargar CSV</title>
+    <style>
+        body {
+            background-color: rgb(208, 232, 242);
+            color: #0056b3;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+
+        form {
+            display: inline-block;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input {
+            padding: 8px;
+            margin-bottom: 15px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #0056b3;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            overflow: auto;
+            text-align: left;
+        }
+    </style>
+    <!-- Agregar jQuery (puedes descargarlo o enlazarlo desde un CDN) -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+</head>
+<body>
+
+    <h1>Generador y Previsualizador de Archivo CSV</h1>
+
+    <form id="downloadForm">
+        <label for="id">ID:</label>
+        <input type="number" id="id" name="id" required>
+        <br>
+        <button type="button" onclick="preview()">Previsualizar CSV</button>
+        <button type="button" onclick="download()">Descargar CSV</button>
+    </form>
+
+    <pre id="csvPreview"></pre>
+
+    <script>
+        function preview() {
+            var idValue = document.getElementById('id').value;
+
+            if (idValue !== "") {
+                var url = 'http://localhost:8000/census/' + idValue + '/export_csv/';
+
+                // Realizar solicitud AJAX
+                $.ajax({
+                    url: url,
+                    method: 'GET',
+                    success: function(data) {
+                        // Mostrar el contenido del CSV en la pre etiqueta
+                        $('#csvPreview').text(data);
+                    },
+                    error: function() {
+                        alert('Error al obtener el archivo CSV.');
+                    }
+                });
+            } else {
+                alert('Por favor, introduce un valor para el ID.');
+            }
+        }
+
+        function download() {
+            var idValue = document.getElementById('id').value;
+
+            if (idValue !== "") {
+                var url = 'http://localhost:8000/census/' + idValue + '/export_csv/';
+
+                // Redirigir para descargar el CSV
+                window.location.href = url;
+            } else {
+                alert('Por favor, introduce un valor para el ID.');
+            }
+        }
+    </script>
+
+</body>
+</html>
