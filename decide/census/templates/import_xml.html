@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importar XML</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color:  rgb(208, 232, 242);
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #007BFF;
+            margin-bottom: 20px;
+        }
+        label {
+            margin-bottom: 10px;
+            color: #495057;
+        }
+        input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007BFF;
+            color: #fff;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            max-width: 200px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        p {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <form method="post" enctype="multipart/form-data" action="{% url 'import-from-xml' %}">
+        {% csrf_token %}
+        <h1>Importar XML</h1>
+        {% if message %}
+            <p>{{ message }}</p>
+        {% endif %}
+        <label for="xml_file">Seleccione un archivo XML:</label>
+        <input type="file" name="xml_file" accept=".xml">
+        <button type="submit">Importar Censo</button>
+    </form>
+</body>
+</html>
