@@ -44,6 +44,33 @@ class CensusExportCSV(generics.ListAPIView):
     def export_page(request):
         return render(request, 'export_csv.html')
 
+class CensusImportCSV(generics.ListAPIView):
+    def post(self, request, *args, **kwargs):
+        csv_file = request.FILES['csv_file']
+        voting_id = self.request.POST.get('voting_id')  # Obtener el voting_id desde el formulario
+        
+        # Procesar el archivo CSV utilizando csv.reader
+        csv_reader = csv.reader(csv_file.read().decode('utf-8').splitlines())
+
+        # Itera sobre las filas del CSV y guárdalas en la base de datos
+        for row in csv_reader:
+            # Ignora la primera fila si tiene encabezado
+            if not row[0].isdigit():
+                next(csv_reader)
+                
+            # Suponiendo que tu archivo CSV tiene una columna: voter_id
+            voter_id = row[0]  # Ajusta el índice según la posición de la columna en tu CSV
+
+            # Verifica si la entrada ya existe para evitar duplicados
+            if not Census.objects.filter(voting_id=voting_id, voter_id=voter_id).exists():
+                Census.objects.create(voting_id=voting_id, voter_id=voter_id)
+
+        return HttpResponse("Census imported successfully.")
+
+    def get(self, request, *args, **kwargs):
+        return render(request, 'import_csv.html')
+
+
 class CensusCreate(generics.ListCreateAPIView):
     permission_classes = (UserIsStaff,)
 
@@ -62,7 +89,6 @@ class CensusCreate(generics.ListCreateAPIView):
         voting_id = request.GET.get('voting_id')
         voters = Census.objects.filter(voting_id=voting_id).values_list('voter_id', flat=True)
         return Response({'voters': voters})
-
 
 class CensusDetail(generics.RetrieveDestroyAPIView):
 
