@@ -1,7 +1,11 @@
 from django.db import models
-from django.db.models import JSONField
+#from django.db.models import JSONField
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+
+import json
+import gzip
+from django.contrib.postgres.fields import JSONField
 
 from base import mods
 from base.models import Auth, Key
@@ -72,7 +76,7 @@ class Voting(models.Model):
             vote_list.append(votes_format)
             votes_format = []
         return vote_list
-
+    
     def tally_votes(self, token=''):
         '''
         The tally is a shuffle and then a decrypt
@@ -127,6 +131,30 @@ class Voting(models.Model):
         postp = mods.post('postproc', json=data)
 
         self.postproc = postp
+        self.save()
+        
+    def save(self, *args, **kwargs):
+        self.save_to_file_and_compress()
+        super().save(*args, **kwargs)
+
+    def save_to_file_and_compress(self):
+        # Tally y postproc
+        tally_data = self.tally
+        postproc_data = self.postproc
+
+        data_to_save = {
+            'tally': tally_data,
+            'postproc': postproc_data,
+        }
+
+        # Dicc --> cadena JSON
+        json_data = json.dumps(data_to_save)
+        file_name = f'voting_{self.id}_data.json.gz'
+
+        with gzip.open(file_name, 'wt', compresslevel=5) as file:
+            file.write(json_data)
+        
+        self.file_path = file_name
         self.save()
 
     def __str__(self):
