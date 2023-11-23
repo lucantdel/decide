@@ -1,0 +1,72 @@
+<head>
+    <title>Registro de usuarios</title>
+    </head>
+
+    <body class="login" data-admin-utc-offset="0">
+
+    <div id="container">
+
+
+        <div id="header">
+            <div id="branding">
+
+              <h1 id="site-name">Registro de usuarios</h1>
+              <h4>Introduce tus datos</h4>
+
+            </div>
+
+        </div>
+      <div class="main" id="main">
+
+          <div class="content">
+            <div id="content" class="colM">
+
+            <div id="content-main">
+
+            {% if error_messages %}
+            <ul class="errorlist">
+            {% for error in error_messages %}
+              <li>{{ error }}</li>
+            {% endfor %}
+            </ul>
+            {% endif %}
+            <form action="/authentication/registrousuarios/" method="post" id="login-form"><input type="hidden" name="csrfmiddlewaretoken" value="5MvOBWwyGwFgUzqrLCsbLtVkIe5W9ayiw5S34O3tYzNeIjZYRZGxdwt64cuUPM0g">
+              <div class="form-row">
+
+                <label for="id_username" class="required">Nombre de usuario:</label> <input type="text" name="username" placeholder="Required" autocapitalize="none" maxlength="150" required="" id="id_username">
+              </div>
+              <div class="form-row">
+
+                <label for="id_email" class="required">Email:</label> <input type="email" placeholder="abcde@email.com" name="email" required="" id="id_email">
+              </div>
+              <div class="form-row">
+
+                <label for="id_password" class="required">Contraseña:</label> <input type="password" name="password" placeholder="Required" autocomplete="current-password" required="" id="id_password">
+              </div>
+              <div class="form-row">
+
+                <label for="id_password_conf" class="required">Confirma la contraseña:</label> <input type="password" name="password_conf" placeholder="Required" autocomplete="current-password" required="" id="id_password">
+              </div>
+
+              {% if register_success %}
+              <div class="submit-row">
+                <p class="success">{{register_success}}</p>
+              </div>
+              {% endif %}
+              {% if not register_success %}
+              <div class="submit-row">
+                <input type="submit" value="Register">
+              </div>
+              {% endif %}
+            </form>
+
+            </div>
+
+              <br class="clear">
+            </div>
+            <div id="footer"></div>
+          </div>
+      </div>
+    </div>
+
+    </body>
