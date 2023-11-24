@@ -1,0 +1,7 @@
+<h1>Listado de Votaciones</h1>
+
+<ul>
+  {% for votacion in votaciones %}
+    <li><a href="{% url 'obtener_detalle_votacion' votacion.id %}">{{ votacion.name }}</a></li>
+  {% endfor %}
+</ul>
