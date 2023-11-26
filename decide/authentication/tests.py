@@ -7,6 +7,10 @@ from rest_framework.authtoken.models import Token
 
 from base import mods
 
+from django.contrib.auth import get_user_model
+from rest_framework import status
+from .models import CustomUser
+
 
 class AuthTestCase(APITestCase):
 
@@ -128,3 +132,51 @@ class AuthTestCase(APITestCase):
             sorted(list(response.json().keys())),
             ['token', 'user_pk']
         )
+
+
+class RegisterUserViewTest(TestCase):
+
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_register_user_get_page(self):
+        url = "/authentication/registrousuarios/"
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "register.html")
+
+    def test_successful_registration(self):
+        url = "/authentication/registrousuarios/"
+        data = {
+            'username': 'juan_car',
+            'password': 'ContraSegUrA123',
+            'email': 'juan@example.com',
+            'password_conf': 'ContraSegUrA123',
+        }
+
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_duplicate_username_registration(self):
+        url = "/authentication/registrousuarios/"
+        data = {
+            'username': 'us1',
+            'password': 'Password123',
+            'email': 'new_user@example.com',
+            'password_conf': 'Password123',
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_short_password_registration(self):
+        url = "/authentication/registrousuarios/"
+        data = {
+            'username': 'new_user',
+            'password': 'Short',
+            'email': 'new_user@example.com',
+            'password_conf': 'Short',
+        }
+
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

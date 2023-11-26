@@ -70,6 +70,28 @@ class RegisterUserView(APIView):
         
         if not username or not pwd or not email or not confirm_pwd:
             return Response({}, status=HTTP_400_BAD_REQUEST)
+        
+        error_messages = []
+
+        if CustomUser.objects.filter(username=username).exists():
+            error_messages.append(
+                "El nombre de usuario se encuentra en la base de datos."
+            )
+
+        if len(pwd) < 8:
+            error_messages.append("La contraseña debe de estar formada por mas de 8 carácteres.")
+
+        if pwd.isdigit():
+            error_messages.append(
+                "La contraseña debe conetener letras, números y carácteres especiales."
+            )
+
+        if pwd != confirm_pwd:
+            error_messages.append("Las contraseñas no coinciden.")
+
+        if error_messages:
+            return render(request, "register.html", {"error_messages": error_messages})
+
         try:
             hashed_pwd = make_password(pwd)
             user = CustomUser(username=username, email=email, password=hashed_pwd)
