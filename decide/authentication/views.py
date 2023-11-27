@@ -8,11 +8,15 @@ from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from django.db import IntegrityError
-from django.shortcuts import get_object_or_404
-from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import get_object_or_404, render
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 
 from .serializers import UserSerializer
 
+from rest_framework import status
+import difflib
+from .models import CustomUser
+from django.contrib.auth.hashers import make_password
 
 class GetUserView(APIView):
     def post(self, request):
@@ -53,3 +57,26 @@ class RegisterView(APIView):
         except IntegrityError:
             return Response({}, status=HTTP_400_BAD_REQUEST)
         return Response({'user_pk': user.pk, 'token': token.key}, HTTP_201_CREATED)
+
+class RegisterUserView(APIView):
+    def get(self, request):
+        return render(request, "register.html")
+
+    def post(self, request):
+        username = request.data.get("username", "")
+        pwd = request.data.get("password", "")
+        email = request.data.get("email", "")
+        confirm_pwd = request.data.get("password_conf", "")
+        
+        if not username or not pwd or not email or not confirm_pwd:
+            return Response({}, status=HTTP_400_BAD_REQUEST)
+        try:
+            hashed_pwd = make_password(pwd)
+            user = CustomUser(username=username, email=email, password=hashed_pwd)
+            user.save()
+        except IntegrityError:
+            return Response({}, status=HTTP_400_BAD_REQUEST)
+
+        register_success = "Se ha creado correctamente su cuenta"
+        return render(request, "register.html", {"register_success": register_success})
+
