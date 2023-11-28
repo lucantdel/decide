@@ -12,8 +12,8 @@ class Census(models.Model):
     ]
     
     born_date = models.DateField()
-    gender = models.CharField(max_length=2, choices=GENDER, null=true)
-    city = models.CharField(max_length=20, null=true)
+    gender = models.CharField(max_length=2, choices=GENDER, null=True)
+    city = models.CharField(max_length=20, null=True)
 
     class Meta:
         unique_together = (('voting_id', 'voter_id','born_date','gender','city'),)
