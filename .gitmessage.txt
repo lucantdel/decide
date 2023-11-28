@@ -1,6 +1,6 @@
-tipo: asunto #id
+tipo: asunto
 
-cuerpo
+#cuerpo
 
 ### tipo
 # feat (nueva funcionalidad)
