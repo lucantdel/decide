@@ -491,3 +491,7 @@ versiones usadas actualmente se corresponden a las siguientes:
 * Vue=3
 * Bootstrap=5.2
 * selenium = 4.7.2
+
+Badge de worflows de GitHub Actions
+-----------------------------------
+[![Python application](https://github.com/lucantdel/decide-part-rivera/actions/workflows/django.yml/badge.svg)](https://github.com/lucantdel/decide-part-rivera/actions/workflows/django.yml)
