@@ -1,3 +1,4 @@
+from django.urls import reverse
 from rest_framework.response import Response
 from rest_framework.status import (
         HTTP_201_CREATED,
@@ -7,8 +8,9 @@ from rest_framework.status import (
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login
 from django.db import IntegrityError
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 
 from .serializers import UserSerializer
@@ -79,4 +81,23 @@ class RegisterUserView(APIView):
 
         register_success = "Se ha creado correctamente su cuenta"
         return render(request, "register.html", {"register_success": register_success})
+    
+class LoginUserView(APIView):
+    def get(self, request):
+        return render(request, "login.html")
 
+    def post(self, request):
+        username = request.data.get("username", "")
+        pwd = request.data.get("password", "")
+        
+        if not username or not pwd:
+            return Response({}, status=HTTP_400_BAD_REQUEST)
+        
+        user = authenticate(request, username=username, password=pwd)
+        
+        if user is not None:
+            login(request, user)
+            login_success = "Ha iniciado sesión correctamente"
+            return render(request, '', {"login_success": login_success})
+        else:
+            return Response({}, status=HTTP_400_BAD_REQUEST)
