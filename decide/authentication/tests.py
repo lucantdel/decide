@@ -7,9 +7,7 @@ from rest_framework.authtoken.models import Token
 
 from base import mods
 
-from django.contrib.auth import get_user_model
 from rest_framework import status
-from .models import CustomUser
 
 
 class AuthTestCase(APITestCase):
@@ -52,7 +50,7 @@ class AuthTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
 
         user = response.json()
-        self.assertEqual(user['id'], 1)
+        self.assertEqual(user['id'], 3)
         self.assertEqual(user['username'], 'voter1')
 
     def test_getuser_invented_token(self):
@@ -133,12 +131,6 @@ class AuthTestCase(APITestCase):
             ['token', 'user_pk']
         )
 
-
-class RegisterUserViewTest(TestCase):
-
-    def setUp(self):
-        self.client = APIClient()
-
     def test_register_user_get_page(self):
         url = "/authentication/registrousuarios/"
 
@@ -158,16 +150,20 @@ class RegisterUserViewTest(TestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_duplicate_username_registration(self):
-        url = "/authentication/registrousuarios/"
+    def test_register_username_exists(self):
+        url = "/authentication/registeruser/"
+        self.assertTrue(User.objects.filter(username="voter1").exists())
         data = {
-            'username': 'us1',
-            'password': 'Password123',
-            'email': 'new_user@example.com',
-            'password_conf': 'Password123',
+            "username": "voter1",
+            "email": "new_user@example.com",
+            "password": "thispasswordisactuallysecure123",
+            "password_conf": "thispasswordisactuallysecure123",
         }
         response = self.client.post(url, data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response, "Username already exists. Please choose a different username."
+        )
 
     def test_short_password_registration(self):
         url = "/authentication/registrousuarios/"
