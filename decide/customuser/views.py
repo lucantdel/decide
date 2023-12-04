@@ -40,14 +40,17 @@ class RegisterUserView(APIView):
 
         if len(pwd) < 8:
             error_messages.append("La contraseña debe de estar formada por mas de 8 carácteres.")
+            return render(request, "register.html", {"error_messages": error_messages}, status=HTTP_400_BAD_REQUEST)
 
         if pwd.isdigit():
             error_messages.append(
                 "La contraseña debe conetener letras, números y carácteres especiales."
             )
+            return render(request, "register.html", {"error_messages": error_messages}, status=HTTP_400_BAD_REQUEST)
 
         if pwd != confirm_pwd:
             error_messages.append("Las contraseñas no coinciden.")
+            return render(request, "register.html", {"error_messages": error_messages}, status=HTTP_400_BAD_REQUEST)
 
         if error_messages:
             return render(request, "register.html", {"error_messages": error_messages})
