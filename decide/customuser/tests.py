@@ -71,3 +71,38 @@ class AuthTestCase(APITestCase):
 
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+    def test_missing_password_(self):
+        url = "/customuser/registrousuarios/"
+        data = {
+            'username': 'new_user',
+            'email': 'new_user@example.com',
+        }
+
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_missing_passwordconf(self):
+        url = "/customuser/registrousuarios/"
+        data = {
+            'username': 'new_user',
+            'password': 'decidepass123',
+            'email': 'new_user@example.com',
+        }
+
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_missing_email(self):
+        url = "/customuser/registrousuarios/"
+        data = {
+            'username': 'new_user',
+            'password': 'Short',
+            'password_conf': 'Short',
+        }
+
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
