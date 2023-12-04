@@ -17,7 +17,6 @@ class RegisterUserView(APIView):
         pwd = request.data.get("password", "")
         email = request.data.get("email", "")
         confirm_pwd = request.data.get("password_conf", "")
-        
         if not username or not pwd or not email or not confirm_pwd:
             return Response({}, status=HTTP_400_BAD_REQUEST)
         
