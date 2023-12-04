@@ -1,3 +1,4 @@
+from pyexpat.errors import messages
 from django.db.utils import IntegrityError
 from django.shortcuts import render
 from django.views.generic import TemplateView
@@ -11,6 +12,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import render, get_object_or_404, redirect
+from forms import *
 from base.perms import UserIsStaff
 import csv
 from .models import Census
@@ -185,3 +187,29 @@ class CensusDetail(generics.RetrieveDestroyAPIView):
         except ObjectDoesNotExist:
             return Response('Invalid voter', status=ST_401)
         return Response('Valid voter')
+
+
+def reuse_census_view(request):
+    if request.method == 'POST':
+        form = ReuseCensusForm(request.POST)
+        if form.is_valid():
+            reuse_voting_id = form.cleaned_data['id_to_reuse']
+
+            # Lógica de reutilización de censos similar a la de reuse_action
+            if reuse_voting_id is not None and reuse_voting_id.strip():
+                for census in Census.objects.all():
+                    if Census.objects.filter(voting_id=reuse_voting_id, voter_id=census.voter_id).exists():
+                        messages.error(request, f"Ya existe Censo con voter_id {census.voter_id} y voting_id {reuse_voting_id} en la base de datos.")
+                        continue
+                    re_census = Census()
+                    re_census.voter_id = census.voter_id
+                    re_census.voting_id = reuse_voting_id
+                    re_census.save()
+                messages.success(request, f"Censos reutilizados con ID: {reuse_voting_id}")
+                return redirect('nombre_de_tu_vista')
+            else:
+                messages.error(request, "Error: Formulario no válido. Asegúrate de ingresar un ID válido.")
+    else:
+        form = ReuseCensusForm()
+
+    return render(request, 'reuse.html', {'form': form})

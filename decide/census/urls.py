@@ -13,4 +13,5 @@ urlpatterns = [
     path('<int:voting_id>/export_csv/', views.CensusExportCSV.as_view(), name='download_csv'),
     path('export_csv/', views.CensusExportCSV.export_page, name='export_csv'),
     path('import_csv/', views.CensusImportCSV.as_view(), name='import_csv'),
+    path('reutilizar-censos/', views.reuse_census_view, name='reuse'),
 ]
