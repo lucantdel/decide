@@ -131,6 +131,8 @@ class VotingTestCase(BaseTestCase):
 
         data = {
             'name': 'Example',
+            'postproc_type': 'IDENTITY',
+            'number_seats': '1',
             'desc': 'Description example',
             'question': 'I want a ',
             'question_opt': ['cat', 'dog', 'horse']
