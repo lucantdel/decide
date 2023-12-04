@@ -1,11 +1,7 @@
-from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework.test import APITestCase
 
 from django.contrib.auth.models import User
-from rest_framework.authtoken.models import Token
-
-from base import mods
 
 from rest_framework import status
 
@@ -22,9 +18,6 @@ class AuthTestCase(APITestCase):
         u2.set_password('admin')
         u2.is_superuser = True
         u2.save()
-
-    def tearDown(self):
-        self.client = None
 
     def tearDown(self):
         self.client = None

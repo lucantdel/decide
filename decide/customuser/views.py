@@ -1,20 +1,12 @@
 from rest_framework.response import Response
 from rest_framework.status import (
-        HTTP_201_CREATED,
         HTTP_400_BAD_REQUEST,
-        HTTP_401_UNAUTHORIZED
 )
 from rest_framework.views import APIView
-from rest_framework.authtoken.models import Token
-from django.contrib.auth.models import User
 from django.db import IntegrityError
-from django.shortcuts import get_object_or_404, render
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.shortcuts import  render
 
-from .serializers import UserSerializer
 
-from rest_framework import status
-import difflib
 from .models import CustomUser
 from django.contrib.auth.hashers import make_password
 
@@ -27,7 +19,6 @@ class RegisterUserView(APIView):
         pwd = request.data.get("password", "")
         email = request.data.get("email", "")
         confirm_pwd = request.data.get("password_conf", "")
-        
         if not username or not pwd or not email or not confirm_pwd:
             return Response({}, status=HTTP_400_BAD_REQUEST)
         
