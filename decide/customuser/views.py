@@ -51,6 +51,15 @@ class RegisterUserView(APIView):
         if pwd != confirm_pwd:
             error_messages.append("Las contraseñas no coinciden.")
             return render(request, "register.html", {"error_messages": error_messages}, status=HTTP_400_BAD_REQUEST)
+        
+        if CustomUser.objects.filter(email=email).exists():
+            error_messages.append("Esta direccion de correo pertenece a otro usuario")
+            return render(request, "register.html", {"error_messages": error_messages}, status=HTTP_400_BAD_REQUEST)
+        
+        if len(username) < 0:
+            error_messages.append("El nombre de usuario no puede estar vacio")
+            return render(request, "register.html", {"error_messages": error_messages}, status=HTTP_400_BAD_REQUEST)
+
 
         if error_messages:
             return render(request, "register.html", {"error_messages": error_messages})
