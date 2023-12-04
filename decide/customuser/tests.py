@@ -1,14 +1,5 @@
-from rest_framework.test import APIClient
 from rest_framework.test import APITestCase
-
-from django.contrib.auth.models import User
-
-from .models import CustomUser
-
 from rest_framework import status
-
-from django.contrib.auth.password_validation import validate_password
-
 
 class AuthTestCase(APITestCase):
 
