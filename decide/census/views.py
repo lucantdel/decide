@@ -1,4 +1,4 @@
-from pyexpat.errors import messages
+from django.contrib import messages
 from django.db.utils import IntegrityError
 from django.shortcuts import render
 from django.views.generic import TemplateView
@@ -196,19 +196,22 @@ def reuse_census_view(request):
             reuse_voting_id = form.cleaned_data['id_to_reuse']
 
             # Lógica de reutilización de censos similar a la de reuse_action
-            if reuse_voting_id is not None and reuse_voting_id.strip():
-                for census in Census.objects.all():
-                    if Census.objects.filter(voting_id=reuse_voting_id, voter_id=census.voter_id).exists():
-                        messages.error(request, f"Ya existe Censo con voter_id {census.voter_id} y voting_id {reuse_voting_id} en la base de datos.")
-                        continue
-                    re_census = Census()
-                    re_census.voter_id = census.voter_id
-                    re_census.voting_id = reuse_voting_id
-                    re_census.save()
-                messages.success(request, f"Censos reutilizados con ID: {reuse_voting_id}")
-                return redirect('nombre_de_tu_vista')
-            else:
-                messages.error(request, "Error: Formulario no válido. Asegúrate de ingresar un ID válido.")
+            if reuse_voting_id is not None:
+                reuse_voting_id = str(reuse_voting_id)  # Convierte a cadena si es un número entero
+
+                if reuse_voting_id.strip():
+                    for census in Census.objects.all():
+                        if Census.objects.filter(voting_id=reuse_voting_id, voter_id=census.voter_id).exists():
+                            messages.error(request, f"Ya existe Censo con voter_id {census.voter_id} y voting_id {reuse_voting_id} en la base de datos.")
+                            continue
+                        re_census = Census()
+                        re_census.voter_id = census.voter_id
+                        re_census.voting_id = reuse_voting_id
+                        re_census.save()
+                    messages.success(request, f"Censos reutilizados con ID: {reuse_voting_id}") 
+                    return redirect('home')
+                else:
+                    messages.error(request, "Error: Formulario no válido. Asegúrate de ingresar un ID válido.")
     else:
         form = ReuseCensusForm()
 
