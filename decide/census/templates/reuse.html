@@ -8,7 +8,7 @@
         {% endfor %}
     </ul>
 {% endif %}
-<form method="post" action="{% url 'nombre_de_tu_vista' %}">
+<form method="post" action="{% url 'reuse' %}">
     {% csrf_token %}
     {{ form }}
     <button type="submit">Reutilizar Censos</button>
