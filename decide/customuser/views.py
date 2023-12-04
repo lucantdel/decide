@@ -1,20 +1,10 @@
 from rest_framework.response import Response
 from rest_framework.status import (
-        HTTP_201_CREATED,
         HTTP_400_BAD_REQUEST,
-        HTTP_401_UNAUTHORIZED
 )
 from rest_framework.views import APIView
-from rest_framework.authtoken.models import Token
-from django.contrib.auth.models import User
 from django.db import IntegrityError
-from django.shortcuts import get_object_or_404, render
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
-
-from .serializers import UserSerializer
-
-from rest_framework import status
-import difflib
+from django.shortcuts import render
 from .models import CustomUser
 from django.contrib.auth.hashers import make_password
 
