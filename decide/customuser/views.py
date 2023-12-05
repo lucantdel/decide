@@ -4,8 +4,8 @@ from rest_framework.status import (
 )
 from rest_framework.views import APIView
 from django.db import IntegrityError
+from django.shortcuts import render
 from django.shortcuts import  render
-
 
 from .models import CustomUser
 from django.contrib.auth.hashers import make_password
@@ -24,34 +24,25 @@ class RegisterUserView(APIView):
         error_messages = []
 
         if CustomUser.objects.filter(username=username).exists():
-            error_messages.append(
-                "El nombre de usuario se encuentra en la base de datos."
-            )
-
+            error_messages.append("El nombre de usuario se encuentra en la base de datos.")
         if len(pwd) < 8:
-            error_messages.append("La contraseña debe de estar formada por mas de 8 carácteres.")
-            return render(request, "register.html", {"error_messages": error_messages}, status=HTTP_400_BAD_REQUEST)
-
+            error_messages.append("La contraseña debe de estar formada por más de 8 caracteres.")
         if pwd.isdigit():
-            error_messages.append(
-                "La contraseña debe conetener letras, números y carácteres especiales."
-            )
-            return render(request, "register.html", {"error_messages": error_messages}, status=HTTP_400_BAD_REQUEST)
-
+            error_messages.append("La contraseña debe contener letras, números y caracteres especiales.")
         if pwd != confirm_pwd:
             error_messages.append("Las contraseñas no coinciden.")
-            return render(request, "register.html", {"error_messages": error_messages}, status=HTTP_400_BAD_REQUEST)
-
+        if CustomUser.objects.filter(email=email).exists():
+            error_messages.append("Esta dirección de correo pertenece a otro usuario")
+        if len(username) < 0:
+            error_messages.append("El nombre de usuario no puede estar vacío")
         if error_messages:
-            return render(request, "register.html", {"error_messages": error_messages})
-
+            return render(request, "register.html", {"error_messages": error_messages}, status=HTTP_400_BAD_REQUEST)
         try:
             hashed_pwd = make_password(pwd)
             user = CustomUser(username=username, email=email, password=hashed_pwd)
             user.save()
         except IntegrityError:
             return Response({}, status=HTTP_400_BAD_REQUEST)
-
         register_success = "Se ha creado correctamente su cuenta"
         return render(request, "register.html", {"register_success": register_success})
 
