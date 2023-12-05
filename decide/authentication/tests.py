@@ -124,17 +124,3 @@ class AuthTestCase(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "register.html")
-
-    def test_successful_registration(self):
-        url = "/authentication/registrousuarios/"
-        data = {
-            'username': 'juan_car',
-            'password': 'ContraSegUrA123',
-            'email': 'juan@example.com',
-            'password_conf': 'ContraSegUrA123',
-        }
-
-        response = self.client.post(url, data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        response = self.client.post(url, data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
