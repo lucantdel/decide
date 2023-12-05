@@ -62,31 +62,25 @@ class Voting(models.Model):
 
     def get_votes(self, token=''):
         # gettings votes from store
-        print ("getVOtes iniciado")
         votes = mods.get('store', params={'voting_id': self.id}, HTTP_AUTHORIZATION='Token ' + token)
-        print ("votes")
         # anon votes
         votes_format = []
         vote_list = []
         for vote in votes:
             for info in vote:
-                print(info)
                 if info == 'a':
                     votes_format.append(vote[info])
                 if info == 'b':
                     votes_format.append(vote[info])
             vote_list.append(votes_format)
             votes_format = []
-            print ("getVOtes finalizado")
         return vote_list
 
     def tally_votes(self, token=''):
         '''
         The tally is a shuffle and then a decrypt
         '''
-        print ("tally iniciado")
         votes = self.get_votes(token)
-        print ("tally continuado")
         auth = self.auths.first()
         shuffle_url = "/shuffle/{}/".format(self.id)
         decrypt_url = "/decrypt/{}/".format(self.id)
@@ -138,3 +132,4 @@ class Voting(models.Model):
 
     def __str__(self):
         return self.name
+
