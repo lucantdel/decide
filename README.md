@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/wadobo/decide.svg?branch=master)](https://travis-ci.com/wadobo/decide) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/6a6e89e141b14761a19288a6b28db474)](https://www.codacy.com/gh/decide-update-4-1/decide-update-4.1/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=decide-update-4-1/decide-update-4.1&amp;utm_campaign=Badge_Grade) [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/6a6e89e141b14761a19288a6b28db474)](https://www.codacy.com/gh/decide-update-4-1/decide-update-4.1/dashboard?utm_source=github.com&utm_medium=referral&utm_content=decide-update-4-1/decide-update-4.1&utm_campaign=Badge_Coverage)
+[![Build Status](https://travis-ci.com/wadobo/decide.svg?branch=master)](https://travis-ci.com/wadobo/decide) [![Python application](https://github.com/lucantdel/decide-part-rivera/actions/workflows/django.yml/badge.svg)](https://github.com/lucantdel/decide-part-rivera/actions/workflows/django.yml) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/6a6e89e141b14761a19288a6b28db474)](https://www.codacy.com/gh/decide-update-4-1/decide-update-4.1/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=decide-update-4-1/decide-update-4.1&amp;utm_campaign=Badge_Grade) [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/6a6e89e141b14761a19288a6b28db474)](https://www.codacy.com/gh/decide-update-4-1/decide-update-4.1/dashboard?utm_source=github.com&utm_medium=referral&utm_content=decide-update-4-1/decide-update-4.1&utm_campaign=Badge_Coverage)
 
 Plataforma voto electrónico educativa
 =====================================
@@ -191,7 +191,7 @@ Al confirmar el voto, nos aparecerá lo siguiente:
 ![Imagen 09: Vote success](./resources/quickstart/08_voted.png)
 
 El mensaje de "Congratulations. Your vote has been sent" nos confirma que nuestro voto ha sido 
-registrado correctamente.
+registrado correctamente.actions
 
 ### 7. Conteo de votos
 
@@ -203,7 +203,7 @@ la fecha actual, esto nos indica que la votación ha sido cerrada y está lista 
 Una vez cerrada la votación, volvemos a seleccionar el checkbox de la izquierda de nuestra votación
 marcamos la opción "Tally" en el desplegable de "Actions" y pulsamos nuevamente en el botón "Go".
 
-![Imagen 10: Tally](./resources/quickstart/09_tally.png)
+![Imagen 10: Tally](./resources/quickstart/09_tally.png)actions
 
 ### 8. Visualización de resultado
 
@@ -257,7 +257,7 @@ Lanzar tests:
 
     $ docker exec -ti decide_web ./manage.py test
 
-Lanzar una consola SQL:
+Lanzar una consola SQL:actions
 
     $ docker exec -ti decide_db ash -c "su - postgres -c 'psql postgres'"
 
