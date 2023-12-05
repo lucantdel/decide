@@ -1,8 +1,11 @@
 import random
 from django.contrib.auth.models import User
 from django.test import TestCase
+from .forms import ReuseCensusForm
 from rest_framework.test import APIClient
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.urls import reverse
+
 
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -197,3 +200,30 @@ class CensusTest(StaticLiveServerTestCase):
 
         self.assertTrue(self.cleaner.find_element_by_xpath('/html/body/div/div[3]/div/div[1]/div/form/div/p').text == 'Please correct the errors below.')
         self.assertTrue(self.cleaner.current_url == self.live_server_url+"/admin/census/census/add")
+        
+class ReuseCensusViewTests(TestCase):
+
+    def test_get_request_returns_form(self):
+        response = self.client.get(reverse('reuse'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'reuse.html')
+        self.assertIsInstance(response.context['form'], ReuseCensusForm)
+
+    def test_invalid_post_request_returns_error_message(self):
+        response = self.client.post(reverse('reuse'), {'id_to_reuse': 'invalid'})
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'reuse.html')
+        self.assertContains(response, "Enter a whole number")
+
+
+    def test_valid_post_request_creates_censuses(self):
+        # Crear algunos censos para la prueba
+        Census.objects.create(voting_id='123', voter_id='001')
+        Census.objects.create(voting_id='123', voter_id='002')
+
+        # Realizar una solicitud POST válida
+        response = self.client.post(reverse('reuse'), {'id_to_reuse': '456'})
+        self.assertEqual(response.status_code, 302)  # Se espera una redirección
+
+        # Verificar que los nuevos censos se hayan creado
+        self.assertEqual(Census.objects.filter(voting_id='456').count(), 2)

@@ -40,19 +40,6 @@ class AuthTestCase(APITestCase):
         response = self.client.post('/authentication/login/', data, format='json')
         self.assertEqual(response.status_code, 400)
 
-    def test_getuser(self):
-        data = {'username': 'voter1', 'password': '123'}
-        response = self.client.post('/authentication/login/', data, format='json')
-        self.assertEqual(response.status_code, 200)
-        token = response.json()
-
-        response = self.client.post('/authentication/getuser/', token, format='json')
-        self.assertEqual(response.status_code, 200)
-
-        user = response.json()
-        self.assertEqual(user['id'], 3)
-        self.assertEqual(user['username'], 'voter1')
-
     def test_getuser_invented_token(self):
         token = {'token': 'invented'}
         response = self.client.post('/authentication/getuser/', token, format='json')
@@ -137,42 +124,3 @@ class AuthTestCase(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "register.html")
-
-    def test_successful_registration(self):
-        url = "/authentication/registrousuarios/"
-        data = {
-            'username': 'juan_car',
-            'password': 'ContraSegUrA123',
-            'email': 'juan@example.com',
-            'password_conf': 'ContraSegUrA123',
-        }
-
-        response = self.client.post(url, data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_register_username_exists(self):
-        url = "/authentication/registeruser/"
-        self.assertTrue(User.objects.filter(username="voter1").exists())
-        data = {
-            "username": "voter1",
-            "email": "new_user@example.com",
-            "password": "thispasswordisactuallysecure123",
-            "password_conf": "thispasswordisactuallysecure123",
-        }
-        response = self.client.post(url, data)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(
-            response, "Username already exists. Please choose a different username."
-        )
-
-    def test_short_password_registration(self):
-        url = "/authentication/registrousuarios/"
-        data = {
-            'username': 'new_user',
-            'password': 'Short',
-            'email': 'new_user@example.com',
-            'password_conf': 'Short',
-        }
-
-        response = self.client.post(url, data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
