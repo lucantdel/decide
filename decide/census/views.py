@@ -12,7 +12,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import render, get_object_or_404, redirect
-from .forms import *
+from .forms import ReuseCensusForm
 from base.perms import UserIsStaff
 import csv
 from .models import Census
@@ -208,11 +208,10 @@ def reuse_census_view(request):
                         re_census.voter_id = census.voter_id
                         re_census.voting_id = reuse_voting_id
                         re_census.save()
-                    messages.success(request, f"Censos reutilizados con ID: {reuse_voting_id}") 
+                    messages.success(request, f"Censos reutilizados con ID: {reuse_voting_id}")
                     return redirect('home')
                 else:
                     messages.error(request, "Error: Formulario no válido. Asegúrate de ingresar un ID válido.")
     else:
         form = ReuseCensusForm()
-
     return render(request, 'reuse.html', {'form': form})
