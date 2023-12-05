@@ -5,6 +5,8 @@ from rest_framework.status import (
 from rest_framework.views import APIView
 from django.db import IntegrityError
 from django.shortcuts import render
+from django.shortcuts import  render
+
 from .models import CustomUser
 from django.contrib.auth.hashers import make_password
 

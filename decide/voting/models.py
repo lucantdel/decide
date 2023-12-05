@@ -5,6 +5,7 @@ from django.dispatch import receiver
 
 from base import mods
 from base.models import Auth, Key
+from postproc.models import PostprocTypeEnum
 
 
 class Question(models.Model):
@@ -31,11 +32,13 @@ class QuestionOption(models.Model):
 class Voting(models.Model):
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)
+    postproc_type = models.CharField(max_length=255, choices=PostprocTypeEnum.choices(), default='IDENTITY')
+    number_seats = models.PositiveIntegerField(default=1)
     question = models.ForeignKey(Question, related_name='voting', on_delete=models.CASCADE)
 
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
-
+    campo_personalizable = models.CharField(max_length=100, blank=True, null=True)
     pub_key = models.OneToOneField(Key, related_name='voting', blank=True, null=True, on_delete=models.SET_NULL)
     auths = models.ManyToManyField(Auth, related_name='votings')
 
@@ -77,9 +80,7 @@ class Voting(models.Model):
         '''
         The tally is a shuffle and then a decrypt
         '''
-
         votes = self.get_votes(token)
-
         auth = self.auths.first()
         shuffle_url = "/shuffle/{}/".format(self.id)
         decrypt_url = "/decrypt/{}/".format(self.id)
@@ -123,7 +124,7 @@ class Voting(models.Model):
                 'votes': votes
             })
 
-        data = { 'type': 'IDENTITY', 'options': opts }
+        data = { 'type': self.postproc_type, 'seats': self.number_seats, 'options': opts }
         postp = mods.post('postproc', json=data)
 
         self.postproc = postp
@@ -131,3 +132,4 @@ class Voting(models.Model):
 
     def __str__(self):
         return self.name
+
