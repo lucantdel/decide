@@ -63,6 +63,7 @@ MODULES = [
     'authentication',
     'base',
     'booth',
+    'customuser',
     'census',
     'mixnet',
     'postproc',
