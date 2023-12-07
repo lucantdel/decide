@@ -87,63 +87,48 @@
 
     <body class="login" data-admin-utc-offset="0">
 
-    <div id="container">
-
-
+      <div id="container">
+  
         <div id="header">
-            <div id="branding">
-
-              <h1 id="site-name">Iniciar sesión</h1>
-              <h4>Introduce tus datos</h4>
-
-            </div>
-
+          <div id="branding">
+            <h1 id="site-name">Inicio de sesión</h1>
+            <h4>Introduce tus credenciales</h4>
+          </div>
         </div>
-      <div class="main" id="main">
 
+        <div class="main" id="main">
           <div class="content">
             <div id="content" class="colM">
 
-            <div id="content-main">
-
-            {% if error_messages %}
-            <ul class="errorlist">
-            {% for error in error_messages %}
-              <li>{{ error }}</li>
-            {% endfor %}
-            </ul>
-            {% endif %}
-            <form action="/census/" method="post" id="login-form"><input type="hidden" name="csrfmiddlewaretoken" value="5MvOBWwyGwFgUzqrLCsbLtVkIe5W9ayiw5S34O3tYzNeIjZYRZGxdwt64cuUPM0g">
-              <div class="form-row">
-
-                <label for="id_username" class="required">Nombre de usuario:</label> 
-                <input type="text" name="username" placeholder="Required" autocapitalize="none" maxlength="150" required="" id="id_username">
-              </div>
-              <div class="form-row">
-
-                <label for="id_password" class="required">Contraseña:</label> 
-                <input type="password" name="password" placeholder="Required" autocomplete="current-password" required="" id="id_password">
-              </div>
-          
-              {% if login_success %}
-              <div class="submit-row">
-                <p class="success">{{login_success}}</p>
-              </div>
+              {% if error_message %}
+              <p class="error">{{ error_message }}</p>
               {% endif %}
-              {% if not login_success %}
-              <div class="submit-row">
-                <input type="submit" value="Login">
-              </div>
-              {% endif %}
-            </form>
+
+              <form action="/authentication/" method="post" id="login-form">
+                <input type="hidden" name="csrfmiddlewaretoken" value="5MvOBWwyGwFgUzqrLCsbLtVkIe5W9ayiw5S34O3tYzNeIjZYRZGxdwt64cuUPM0g">
+
+                <div class="form-row">
+                  <label for="id_username" class="required">Nombre de usuario:</label>
+                  <input type="text" name="username" placeholder="Nombre de usuario" autocapitalize="none" maxlength="150" required="" id="id_username">
+                </div>
+
+                <div class="form-row">
+                  <label for="id_password" class="required">Contraseña:</label>
+                  <input type="password" name="password" placeholder="Contraseña" autocomplete="current-password" required="" id="id_password">
+                </div>
+
+                <div class="submit-row">
+                  <input type="submit" value="Iniciar sesión">
+                </div>
+              </form>
 
             </div>
 
-              <br class="clear">
-            </div>
-            <div id="footer"></div>
+            <br class="clear">
           </div>
+          <div id="footer"></div>
+        </div>
       </div>
-    </div>
-
-    </body>
+  
+  </body>
+  

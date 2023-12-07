@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.urls import reverse
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -87,17 +88,20 @@ class LoginUserView(APIView):
         return render(request, "login.html")
 
     def post(self, request):
-        username = request.data.get("username", "")
-        pwd = request.data.get("password", "")
-        
-        if not username or not pwd:
-            return Response({}, status=HTTP_400_BAD_REQUEST)
-        
-        user = authenticate(request, username=username, password=pwd)
-        
+        username = request.POST.get("username", "")
+        password = request.POST.get("password", "")
+
+        if not username or not password:
+            return HttpResponse(status=400)  
+
+        user = authenticate(request, username=username, password=password)
+        print(user)
+
         if user is not None:
             login(request, user)
-            login_success = "Ha iniciado sesión correctamente"
-            return render(request, '', {"login_success": login_success})
+            # Usuario autenticado con éxito.
+            return HttpResponse("Inicio de sesión exitoso")
         else:
-            return Response({}, status=HTTP_400_BAD_REQUEST)
+            # Usuario no autenticado.
+            return render(request, "login.html", {"error_message": "Credenciales incorrectas"})
+    
