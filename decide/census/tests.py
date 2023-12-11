@@ -122,7 +122,7 @@ class CensusExportationXML(TestCase):
         expected_link = f'<a href="{reverse("export-to-xml")}">Export to XML</a>'
         self.assertIn(expected_link, response.content.decode())
 
-class CensusImportationXML:
+class CensusImportationXML(TestCase):
     def test_positive_import_from_xml(self):
         xml_content = b'<census><entry><voting_id>1</voting_id><voter_id>1</voter_id></entry></census>'
         xml_file = SimpleUploadedFile("census.xml", xml_content, content_type="application/xml")
@@ -130,7 +130,7 @@ class CensusImportationXML:
         response = self.client.post('/census/importar-xml/', {'xml_file': xml_file}, format='multipart')
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("import successful", response.content.decode())
+        self.assertIn("Census imported successfully.", response.content.decode())
 
     def test_admin_access(self):
         self.client.login(username='admin', password='admin')
