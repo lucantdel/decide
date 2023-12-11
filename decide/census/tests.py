@@ -17,6 +17,8 @@ from .models import Census
 from base import mods
 from base.tests import BaseTestCase
 from datetime import datetime
+from django.core.files.uploadedfile import SimpleUploadedFile
+
 
 
 class CensusTestCase(BaseTestCase):
@@ -91,7 +93,6 @@ class CensusExportationXML:
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/xml')
 
-        # Verificar la presencia de elementos clave en el XML
         expected_elements = ['<census>', '<entry>', '<voting_id>1</voting_id>', '<voter_id>1</voter_id>', '</entry>', '</census>']
         for element in expected_elements:
             self.assertIn(element, response.content.decode())
@@ -103,21 +104,29 @@ class CensusExportationXML:
 
     def test_download_from_html(self):
         self.client.login(username='admin', password='admin')
-        
-        # Realizar una solicitud POST al endpoint que maneja la descarga desde el HTML
         response = self.client.post(reverse('export_page'))
         
-        # Asegurar que la respuesta tiene un código de estado 200
         self.assertEqual(response.status_code, 200)
-
-        # Asegurar que el tipo de contenido de la respuesta es 'application/xml'
         self.assertEqual(response['content-type'], 'application/xml')
 
-        # Verificar la presencia de elementos clave en el XML
         expected_elements = ['<census>', '<entry>', '<voting_id>1</voting_id>', '<voter_id>1</voter_id>', '</entry>', '</census>']
         for element in expected_elements:
             self.assertIn(element, response.content.decode())
 
+class CensusImportationXML:
+    def test_positive_import_from_xml(self):
+        xml_content = b'<census><entry><voting_id>1</voting_id><voter_id>1</voter_id></entry></census>'
+        xml_file = SimpleUploadedFile("census.xml", xml_content, content_type="application/xml")
+
+        response = self.client.post('/census/importar-xml/', {'xml_file': xml_file}, format='multipart')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("import successful", response.content.decode())
+
+    def test_admin_access(self):
+        self.client.login(username='admin', password='admin')
+        response = self.client.get('/census/importar-xml/', format='json')
+        self.assertEqual(response.status_code, 200)
 
 class CensusTest(StaticLiveServerTestCase):
     def setUp(self):
