@@ -11,10 +11,18 @@ class CreationCensusForm(forms.Form):
         ("FE", "Female"),
         ("NP", "No response")
     ]
+    
+    CITY = [
+        ("SE", "Sevilla"),
+        ("MA", "Madrid"),
+        ("BAR", "Barcelona"),
+        ("VA", "Valencia"),
+        ("ZA", "Zaragoza")
+    ]
 
     born_date = forms.DateField()
-    gender = forms.CharField(max_length=2, choices=GENDER, null=true)
-    city = forms.CharField(max_length=20, choices=CITY, null=true)
+    gender = forms.CharField(max_length=2, choices=GENDER, null=True)
+    city = forms.CharField(max_length=20, choices=CITY, null=True)
 
     class Meta:
 
