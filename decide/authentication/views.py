@@ -13,7 +13,7 @@ from django.contrib.auth import authenticate, login
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404, render, redirect
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-
+from .form import LoginForm
 from .serializers import UserSerializer
 
 from rest_framework import status
@@ -88,20 +88,23 @@ class LoginUserView(APIView):
         return render(request, "login.html")
 
     def post(self, request):
-        username = request.POST.get("username", "")
-        password = request.POST.get("password", "")
+        form = LoginForm(request.POST)
 
-        if not username or not password:
-            return HttpResponse(status=400)  
-
-        user = authenticate(request, username=username, password=password)
-        print(user)
-
-        if user is not None:
-            login(request, user)
-            # Usuario autenticado con éxito.
-            return HttpResponse("Inicio de sesión exitoso")
-        else:
-            # Usuario no autenticado.
-            return render(request, "login.html", {"error_message": "Credenciales incorrectas"})
+        if form.is_valid():
+            username = form.cleaned_data.get("username")
+            password = form.cleaned_data.get("password")
+            user = authenticate(request, username=username, password=password)
+            print(username + " " + password)
+            print(user)
+            
+            if not username or not password:
+                return HttpResponse(status=400)  
+            
+            if user is not None:
+                login(request, user)
+                # Usuario autenticado con éxito.
+                return HttpResponse("Inicio de sesión exitoso")
+            else:
+                # Usuario no autenticado.
+                return render(request, "login.html", {"error_message": "Credenciales incorrectas"})
     

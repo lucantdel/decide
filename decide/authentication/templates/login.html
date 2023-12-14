@@ -1,134 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
-    
-        #container {
-            width: 80%;
-            margin: 0 auto;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            margin-top: 50px;
-        }
-    
-        #header {
-            background-color: #333;
-            color: #fff;
-            padding: 10px;
-            text-align: center;
-        }
-    
-        #branding {
-            margin-bottom: 20px;
-        }
-    
-        #branding h1 {
-            margin: 0;
-            font-size: 24px;
-        }
-    
-        #branding h4 {
-            margin: 5px 0;
-            font-size: 16px;
-            color: #777;
-        }
-    
-        .main {
-            display: flex;
-            justify-content: center;
-        }
-    
-        .content {
-            width: 100%;
-            max-width: 500px;
-        }
-    
-        .form-row {
-            margin-bottom: 15px;
-        }
-    
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-    
-        input {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-    
-        .submit-row {
-            margin-top: 15px;
-        }
-    
-        .success {
-            color: green;
-            font-weight: bold;
-        }
-    
-        .errorlist {
-            color: red;
-            margin-bottom: 15px;
-        }
-    
-        .clear {
-            clear: both;
-        }
-    </style>
-    <title>Inicio de sesión</title>
-    </head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+      body {
+          font-family: Arial, sans-serif;
+          background-color: #f4f4f4;
+          margin: 0;
+          padding: 0;
+      }
 
-    <body class="login" data-admin-utc-offset="0">
+      #container {
+          width: 80%;
+          margin: 0 auto;
+          background-color: #fff;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          padding: 20px;
+          margin-top: 50px;
+      }
 
-      <div id="container">
-  
-        <div id="header">
-          <div id="branding">
-            <h1 id="site-name">Inicio de sesión</h1>
-            <h4>Introduce tus credenciales</h4>
-          </div>
-        </div>
+      #header {
+          background-color: #333;
+          color: #fff;
+          padding: 10px;
+          text-align: center;
+      }
 
-        <div class="main" id="main">
-          <div class="content">
-            <div id="content" class="colM">
+      #branding {
+          margin-bottom: 20px;
+      }
 
-              {% if error_message %}
-              <p class="error">{{ error_message }}</p>
-              {% endif %}
+      #branding h1 {
+          margin: 0;
+          font-size: 24px;
+      }
 
-              <form action="/authentication/" method="post" id="login-form">
-                <input type="hidden" name="csrfmiddlewaretoken" value="5MvOBWwyGwFgUzqrLCsbLtVkIe5W9ayiw5S34O3tYzNeIjZYRZGxdwt64cuUPM0g">
+      #branding h4 {
+          margin: 5px 0;
+          font-size: 16px;
+          color: #777;
+      }
 
-                <div class="form-row">
-                  <label for="id_username" class="required">Nombre de usuario:</label>
-                  <input type="text" name="username" placeholder="Nombre de usuario" autocapitalize="none" maxlength="150" required="" id="id_username">
-                </div>
+      .main {
+          display: flex;
+          justify-content: center;
+      }
 
-                <div class="form-row">
-                  <label for="id_password" class="required">Contraseña:</label>
-                  <input type="password" name="password" placeholder="Contraseña" autocomplete="current-password" required="" id="id_password">
-                </div>
+      .content {
+          width: 100%;
+          max-width: 500px;
+      }
 
-                <div class="submit-row">
-                  <input type="submit" value="Iniciar sesión">
-                </div>
-              </form>
+      .form-row {
+          margin-bottom: 15px;
+      }
 
+      label {
+          display: block;
+          margin-bottom: 5px;
+          font-weight: bold;
+      }
+
+      input {
+          width: 100%;
+          padding: 8px;
+          box-sizing: border-box;
+      }
+
+      .submit-row {
+          margin-top: 15px;
+      }
+
+      .success {
+          color: green;
+          font-weight: bold;
+      }
+
+      .errorlist {
+          color: red;
+          margin-bottom: 15px;
+      }
+
+      .clear {
+          clear: both;
+      }
+  </style>
+  <title>Inicio de sesión</title>
+</head>
+
+<!--<body>
+  <div class="container">
+    <h2 id="title">Inicio de sesión</h2>
+    {% if user.is_authenticated %}
+    <p>Ya has iniciado sesión como {{user.username}}</p>
+    {% endif %}
+    <form method="POST" class="form-group" action="">
+      {% csrf_token %}
+      <label for="username">Nombre de usuario:</label>
+      <input type="text" id="username" name="username" placeholder="JohnDoe" required>
+      <label for="password">Contraseña:</label>
+      <input type="password" id="password" name="password" placeholder="Contraseña" required>
+      <input type="submit" value="Log In">
+    </form>
+  </div>
+</body>-->
+
+<body class="login" data-admin-utc-offset="0">
+  <div id="container">
+    <div id="header">
+      <div id="branding">
+        <h1 id="site-name">Inicio de sesión</h1>
+        <h4>Introduce tus credenciales</h4>
+      </div>
+    </div>
+    {% if user.is_authenticated %}
+    <p>Ya has iniciado sesión como {{user.username}}</p>
+    {% endif %}
+    <div class="main" id="main">
+      <div class="content">
+        <div id="content" class="colM">
+
+          {% if error_message %}
+          <p class="error">{{ error_message }}</p>
+          {% endif %}
+
+          <form action="/authentication/" method="post" id="login-form" class="form-group">
+            {% csrf_token %}
+
+            <div class="form-row">
+              <label for="id_username" class="required">Nombre de usuario:</label>
+              <input type="text" name="username" placeholder="Nombre de usuario" autocapitalize="none" maxlength="150" required="" id="id_username">
             </div>
 
-            <br class="clear">
-          </div>
-          <div id="footer"></div>
+            <div class="form-row">
+              <label for="id_password" class="required">Contraseña:</label>
+              <input type="password" name="password" placeholder="Contraseña" autocomplete="current-password" required="" id="id_password">
+            </div>
+
+            <div class="submit-row">
+              <input type="submit" value="Iniciar sesión">
+            </div>
+          </form>
+
         </div>
+
+        <br class="clear">
       </div>
-  
-  </body>
+      <div id="footer"></div>
+    </div>
+  </div>
+
+</body>
+</html>
   
