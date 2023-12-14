@@ -66,5 +66,3 @@ class AuthTestCase(APITestCase):
 
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-
