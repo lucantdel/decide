@@ -13,7 +13,6 @@ class CensoUser(HttpUser):
     @task
     def export_censo_xml(self):
         response = self.client.get("/census/export-to-xml/")
-        # Agrega verificaciones según la respuesta de exportación
         assert response.status_code == 200, f"Failed to export census XML. Status code: {response.status_code}"
 
     '''@task
