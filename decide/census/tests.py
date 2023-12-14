@@ -51,7 +51,7 @@ class CensusTestCase(BaseTestCase):
         response = self.client.get('/census/createCensus/?voting_id={}'.format(1), format='json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {'voters': [1]})
-"""
+'''
     def test_add_new_voters_conflict(self):
         data = {'voting_id': 1, 'voters': [1]}
         response = self.client.post('/census/createCensus/', data, format='json')
@@ -84,7 +84,7 @@ class CensusTestCase(BaseTestCase):
         response = self.client.delete('/census/{}/'.format(1), data, format='json')
         self.assertEqual(response.status_code, 204)
         self.assertEqual(0, Census.objects.count())
-"""
+'''
 
 class CensusExportationXML:
     def test_positive_export_to_xml(self):
