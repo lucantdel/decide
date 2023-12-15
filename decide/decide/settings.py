@@ -57,6 +57,7 @@ REST_FRAMEWORK = {
 
 AUTHENTICATION_BACKENDS = [
     'base.backends.AuthBackend',
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
 MODULES = [

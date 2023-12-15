@@ -9,12 +9,14 @@ from rest_framework.status import (
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import login
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404, render, redirect
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from .form import LoginForm
 from .serializers import UserSerializer
+
+from authentication.CustomUserAuthBackend import CustomUserAuthBackend
 
 from rest_framework import status
 import difflib
@@ -93,7 +95,7 @@ class LoginUserView(APIView):
         if form.is_valid():
             username = form.cleaned_data.get("username")
             password = form.cleaned_data.get("password")
-            user = authenticate(request, username=username, password=password)
+            user = CustomUserAuthBackend().authenticate(request, username=username, password=password)
             print(username + " " + password)
             print(user)
             
