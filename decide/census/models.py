@@ -16,4 +16,4 @@ class Census(models.Model):
     city = models.CharField(max_length=20, null=True)
 
     class Meta:
-        unique_together = (('voting_id', 'voter_id','born_date','gender','city'),)
+        unique_together = (('voting_id', 'voter_id'),)
