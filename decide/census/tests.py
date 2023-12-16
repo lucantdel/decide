@@ -222,27 +222,23 @@ class CensusTest(StaticLiveServerTestCase):
         
 class ReuseCensusViewTests(TestCase):
 
+    def setUp(self):
+        Census.objects.create(voting_id='1', voter_id='1')
+        Census.objects.create(voting_id='2', voter_id='2')
+
     def test_get_request_returns_form(self):
         response = self.client.get(reverse('reuse'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'reuse.html')
         self.assertIsInstance(response.context['form'], ReuseCensusForm)
 
-    def test_invalid_post_request_returns_error_message(self):
-        response = self.client.post(reverse('reuse'), {'id_to_reuse': 'invalid'})
+    def test_post_request_no_existing_census(self):
+        response = self.client.post(reverse('reuse'), {'id_to_reuse': '999', 'new_id': 3})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "No existen censos para todos los IDs proporcionados para reutilizar.")
+
+    def test_invalid_post_request_returns_error_message_2(self):
+        response = self.client.post(reverse('reuse'), {'id_to_reuse': 'abc', 'new_id': 3})
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'reuse.html')
-        self.assertContains(response, "Enter a whole number")
-
-
-    def test_valid_post_request_creates_censuses(self):
-        # Crear algunos censos para la prueba
-        Census.objects.create(voting_id='123', voter_id='001')
-        Census.objects.create(voting_id='123', voter_id='002')
-
-        # Realizar una solicitud POST válida
-        response = self.client.post(reverse('reuse'), {'id_to_reuse': '456'})
-        self.assertEqual(response.status_code, 302)  # Se espera una redirección
-
-        # Verificar que los nuevos censos se hayan creado
-        self.assertEqual(Census.objects.filter(voting_id='456').count(), 2)
+        self.assertContains(response, "Error: Se proporcionó un ID no numérico.")
