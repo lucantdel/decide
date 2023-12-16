@@ -13,6 +13,7 @@ from locust import (
 
 HOST = "http://localhost:8000"
 VOTING = 1
+CENSUS = 1
 
 
 class DefVisualizer(TaskSet):
@@ -62,14 +63,23 @@ class DefVoters(SequentialTaskSet):
     def on_quit(self):
         self.voter = None
 
+class DefExportCensusCSV(TaskSet):
+
+    @task
+    def index(self):
+        self.client.get("/census/{0}/export_csv/".format(CENSUS))
+
 class Visualizer(HttpUser):
     host = HOST
     tasks = [DefVisualizer]
     wait_time = between(3,5)
 
-
-
 class Voters(HttpUser):
     host = HOST
     tasks = [DefVoters]
+    wait_time= between(3,5)
+
+class ExportCensusCSV(HttpUser):
+    host = HOST
+    tasks = [DefExportCensusCSV]
     wait_time= between(3,5)
