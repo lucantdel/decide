@@ -183,3 +183,24 @@ if os.path.exists("config.jsonnet"):
 
 
 INSTALLED_APPS = INSTALLED_APPS + MODULES
+
+# Use the SMTP email backend
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+# Outlook/Office 365 SMTP settings
+EMAIL_HOST = 'smtp.office365.com'
+EMAIL_PORT = 587  # Use port 587 for STARTTLS
+EMAIL_USE_TLS = True  # Use TLS for encryption
+
+# Your Outlook/Office 365 email credentials
+EMAIL_HOST_USER = 'egc-rivera-register@outlook.es'
+EMAIL_HOST_PASSWORD = 'decidepass123'
+
+# Default "from" address for emails
+DEFAULT_FROM_EMAIL = 'egc-rivera-register@outlook.es'
+
+# Server email address for sending server error messages
+SERVER_EMAIL = 'egc-rivera-register@outlook.es'
+
+# Optional: Email subject prefix
+EMAIL_SUBJECT_PREFIX = 'decide-part-rivera Registro - ' 
