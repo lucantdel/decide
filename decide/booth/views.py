@@ -15,9 +15,6 @@ class BoothView(TemplateView):
         vid = kwargs.get('voting_id', 0)
         campo_personalizable = kwargs.get('campo_personalizable', None)
         
-        if campo_personalizable is None:
-            raise Http404
-
         try:
             r = mods.get('voting', params={'id': vid})
             r = mods.get('voting', params={'campo_personalizable': campo_personalizable})
