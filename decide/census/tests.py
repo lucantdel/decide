@@ -1,13 +1,12 @@
 import random
 from django.contrib.auth.models import User
-from django.test import TestCase, Client
+from django.test import TestCase
 from .forms import ReuseCensusForm
 from rest_framework.test import APIClient
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
-from io import StringIO
-import csv
+
 
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -19,7 +18,6 @@ from .models import Census
 from base import mods
 from base.tests import BaseTestCase
 from datetime import datetime
-from django.core.files.uploadedfile import SimpleUploadedFile
 
 TEST_VOTING_ID=100
 
