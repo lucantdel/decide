@@ -12,7 +12,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import render, get_object_or_404, redirect
-from .forms import *
+from .forms import ReuseCensusForm
 from base.perms import UserIsStaff
 import csv
 from .models import Census
@@ -193,25 +193,33 @@ def reuse_census_view(request):
     if request.method == 'POST':
         form = ReuseCensusForm(request.POST)
         if form.is_valid():
-            reuse_voting_id = form.cleaned_data['id_to_reuse']
+            reuse_voting_ids = form.cleaned_data['id_to_reuse']
+            new_voting = form.cleaned_data['new_id']
 
-            # Lógica de reutilización de censos similar a la de reuse_action
-            if reuse_voting_id is not None:
-                reuse_voting_id = str(reuse_voting_id)  # Convierte a cadena si es un número entero
+            if reuse_voting_ids:
+                reuse_voting_ids = reuse_voting_ids.split(',')
+                reuse_voting_ids = [id_.strip() for id_ in reuse_voting_ids if id_.strip()]
 
-                if reuse_voting_id.strip():
-                    for census in Census.objects.all():
-                        if Census.objects.filter(voting_id=reuse_voting_id, voter_id=census.voter_id).exists():
-                            messages.error(request, f"Ya existe Censo con voter_id {census.voter_id} y voting_id {reuse_voting_id} en la base de datos.")
-                            continue
-                        re_census = Census()
-                        re_census.voter_id = census.voter_id
-                        re_census.voting_id = reuse_voting_id
-                        re_census.save()
-                    messages.success(request, f"Censos reutilizados con ID: {reuse_voting_id}") 
-                    return redirect('home')
-                else:
-                    messages.error(request, "Error: Formulario no válido. Asegúrate de ingresar un ID válido.")
+                try:
+                    if not all(Census.objects.filter(voting_id=int(id_)).exists() for id_ in reuse_voting_ids):
+                        messages.error(request, "No existen censos para todos los IDs proporcionados para reutilizar.")
+                        return render(request, 'reuse.html', {'form': form})
+                except ValueError:
+                    messages.error(request, "Error: Se proporcionó un ID no numérico.")
+                    return render(request, 'reuse.html', {'form': form})
+
+                for reuse_voting_id in reuse_voting_ids:
+                    for census in Census.objects.filter(voting_id=reuse_voting_id):
+                        if not Census.objects.filter(voting_id=new_voting, voter_id=census.voter_id).exists():
+                            re_census = Census()
+                            re_census.voting_id = new_voting                    
+                            re_census.voter_id = census.voter_id
+                            re_census.save()
+                
+                messages.success(request, f"Censos reutilizados con IDs: {', '.join(reuse_voting_ids)}")
+                return redirect('home')
+            else:
+                messages.error(request, "Error: Formulario no válido. Asegúrate de ingresar IDs válidos.")
     else:
         form = ReuseCensusForm()
 

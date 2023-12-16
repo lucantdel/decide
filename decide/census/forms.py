@@ -48,4 +48,10 @@ class CreationCensusForm(forms.Form):
         return census
 
 class ReuseCensusForm(forms.Form):
-    id_to_reuse = forms.IntegerField(label="ID de la votación (Reutilizar)", required=False)
+    id_to_reuse = forms.CharField(
+        label="IDs de las votaciones a reutilizar (separados por comas)",
+        required=True,
+        widget=forms.TextInput(attrs={'placeholder': 'Ejemplo: 1, 2, 3'}),
+    )
+
+    new_id = forms.IntegerField(label="ID de la votación", required=True)
