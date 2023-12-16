@@ -17,6 +17,8 @@ from .models import Census
 from base import mods
 from base.tests import BaseTestCase
 from datetime import datetime
+from django.core.files.uploadedfile import SimpleUploadedFile
+
 
 
 class CensusTestCase(BaseTestCase):
@@ -85,13 +87,22 @@ class CensusTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 204)
         self.assertEqual(0, Census.objects.count())
 
-class CensusExportationXML:
+
+class CensusExportationXML(TestCase):
+    def setUp(self):
+        super().setUp()
+        self.census = Census(voting_id=1, voter_id=1)
+        self.census.save()
+
+    def tearDown(self):
+        super().tearDown()
+        self.census = None
+
     def test_positive_export_to_xml(self):
         response = self.client.get('/census/export-to-xml/', format='json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/xml')
 
-        # Verificar la presencia de elementos clave en el XML
         expected_elements = ['<census>', '<entry>', '<voting_id>1</voting_id>', '<voter_id>1</voter_id>', '</entry>', '</census>']
         for element in expected_elements:
             self.assertIn(element, response.content.decode())
@@ -103,21 +114,29 @@ class CensusExportationXML:
 
     def test_download_from_html(self):
         self.client.login(username='admin', password='admin')
-        
-        # Realizar una solicitud POST al endpoint que maneja la descarga desde el HTML
-        response = self.client.post(reverse('export_page'))
-        
-        # Asegurar que la respuesta tiene un código de estado 200
+        response = self.client.post(reverse('export-page'))
+
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['content-type'], 'text/html; charset=utf-8')
 
-        # Asegurar que el tipo de contenido de la respuesta es 'application/xml'
-        self.assertEqual(response['content-type'], 'application/xml')
+        # Verifica la presencia del enlace generado por Django en lugar de escribir la URL manualmente
+        expected_link = f'<a href="{reverse("export-to-xml")}">Export to XML</a>'
+        self.assertIn(expected_link, response.content.decode())
 
-        # Verificar la presencia de elementos clave en el XML
-        expected_elements = ['<census>', '<entry>', '<voting_id>1</voting_id>', '<voter_id>1</voter_id>', '</entry>', '</census>']
-        for element in expected_elements:
-            self.assertIn(element, response.content.decode())
+class CensusImportationXML(TestCase):
+    def test_positive_import_from_xml(self):
+        xml_content = b'<census><entry><voting_id>1</voting_id><voter_id>1</voter_id></entry></census>'
+        xml_file = SimpleUploadedFile("census.xml", xml_content, content_type="application/xml")
 
+        response = self.client.post('/census/importar-xml/', {'xml_file': xml_file}, format='multipart')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Census imported successfully.", response.content.decode())
+
+    def test_admin_access(self):
+        self.client.login(username='admin', password='admin')
+        response = self.client.get('/census/importar-xml/', format='json')
+        self.assertEqual(response.status_code, 200)
 
 class CensusTest(StaticLiveServerTestCase):
     def setUp(self):

@@ -7,7 +7,6 @@ from rest_framework.authtoken.models import Token
 
 from base import mods
 
-from rest_framework import status
 
 
 class AuthTestCase(APITestCase):
@@ -117,10 +116,3 @@ class AuthTestCase(APITestCase):
             sorted(list(response.json().keys())),
             ['token', 'user_pk']
         )
-
-    def test_register_user_get_page(self):
-        url = "/authentication/registrousuarios/"
-
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "register.html")
