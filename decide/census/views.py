@@ -48,7 +48,7 @@ class CensusExportCSV(generics.ListAPIView):
         writer = csv.writer(response)
 
         # Escribir la fila de encabezados si es necesario
-        #writer.writerow(['voter_id'])
+        writer.writerow(['voter_id'])
 
         # Escribir los datos en filas
         for voter_id in voters:
