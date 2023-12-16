@@ -68,12 +68,12 @@ class CensusImportCSV(generics.ListAPIView):
         # Procesar el archivo CSV utilizando csv.reader
         csv_reader = csv.reader(csv_file.read().decode('utf-8').splitlines())
 
+        # Ignora la primera fila si tiene encabezado
+        if not csv_reader.__next__()[0].isdigit():
+            next(csv_reader)
+
         # Itera sobre las filas del CSV y guárdalas en la base de datos
         for row in csv_reader:
-            # Ignora la primera fila si tiene encabezado
-            if not row[0].isdigit():
-                next(csv_reader)
-                
             # Suponiendo que tu archivo CSV tiene una columna: voter_id
             voter_id = row[0]  # Ajusta el índice según la posición de la columna en tu CSV
 
