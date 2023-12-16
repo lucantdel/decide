@@ -212,11 +212,11 @@ def reuse_census_view(request):
                     for census in Census.objects.filter(voting_id=reuse_voting_id):
                         if not Census.objects.filter(voting_id=new_voting, voter_id=census.voter_id).exists():
                             re_census = Census()
-                            re_census.voting_id = new_voting                      
+                            re_census.voting_id = new_voting                    
                             re_census.voter_id = census.voter_id
                             re_census.save()
                 
-                messages.success(request, f"Censos reutilizados con IDs: {', '.join(reuse_voting_ids)}") 
+                messages.success(request, f"Censos reutilizados con IDs: {', '.join(reuse_voting_ids)}")
                 return redirect('home')
             else:
                 messages.error(request, "Error: Formulario no válido. Asegúrate de ingresar IDs válidos.")

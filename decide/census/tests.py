@@ -232,18 +232,12 @@ class ReuseCensusViewTests(TestCase):
         self.assertTemplateUsed(response, 'reuse.html')
         self.assertIsInstance(response.context['form'], ReuseCensusForm)
 
-    def test_invalid_post_request_returns_error_message(self):
-        response = self.client.post(reverse('reuse'), {'id_to_reuse': 'abc', 'new_id': 3})
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'reuse.html')
-        self.assertContains(response, "Error: Formulario no válido")
-
     def test_post_request_no_existing_census(self):
         response = self.client.post(reverse('reuse'), {'id_to_reuse': '999', 'new_id': 3})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "No existen censos para todos los IDs proporcionados para reutilizar.")
 
-    def test_invalid_post_request_returns_error_message(self):
+    def test_invalid_post_request_returns_error_message_2(self):
         response = self.client.post(reverse('reuse'), {'id_to_reuse': 'abc', 'new_id': 3})
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'reuse.html')
