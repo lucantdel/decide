@@ -75,8 +75,7 @@ class CensusImportCSV(generics.ListAPIView):
         csv_reader = csv.reader(csv_file.read().decode('utf-8').splitlines())
 
         # Ignora la primera fila si tiene encabezado
-        if not csv_reader.__next__()[0].isdigit():
-            next(csv_reader)
+        next(csv_reader)
 
         # Itera sobre las filas del CSV y guárdalas en la base de datos
         for row in csv_reader:

@@ -21,7 +21,7 @@ from base.tests import BaseTestCase
 from datetime import datetime
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-
+TEST_VOTING_ID=100
 
 class CensusTestCase(BaseTestCase):
 
@@ -273,30 +273,48 @@ class CensusExportCSVTest(TestCase):
         response = self.client.get('/census/' + str(101) + '/export_csv/', format='json')
         self.assertEqual(response.status_code, 404)
 
-    def test_export_csv_not_invalid_id(self):
+    def test_export_csv_invalid_id(self):
         response = self.client.get('/census/' + 'abc' + '/export_csv/', format='json')
         self.assertEqual(response.status_code, 404)
-'''  
+
 class CensusImportCSVTest(TestCase):
 
-    def test_import_csv(self):
+    def setUp(self):
+        super().setUp()
     
-        # Crear un CSV de prueba en memoria
-        csv_data = StringIO()
-        writer = csv.writer(csv_data)
-        writer.writerow(['voter_id'])  # Encabezado, si es necesario
-        writer.writerow([123])         # Datos de prueba
-        writer.writerow([456])
-        csv_data.seek(0)  # Regresar al inicio del stream
+    def tearDown(self):
+        super().tearDown()
 
-        # Crear un archivo falso para simular la subida de un archivo
-        csv_file = SimpleUploadedFile("test.csv", csv_data.getvalue().encode('utf-8'), content_type="text/csv")
+    def test_import_valid_csv(self):
+        with open('census/test_files/valid_census.csv', 'rb') as file:  # Modo 'rb' para lectura binaria
+            file_content = file.read()
+        
+        test_file = SimpleUploadedFile("testcensus.csv", file_content, content_type="text/csv")
 
         # Envío del archivo CSV a través de una solicitud POST
-        response = self.client.post('census/import_csv', {'csv_file': csv_file, 'voting_id': 500})
+        response = self.client.post('/census/import_csv/', {'csv_file': test_file, 'voting_id': TEST_VOTING_ID})
 
         # Verificar la respuesta y el estado de la base de datos
         self.assertContains(response, "Census imported successfully.")
-        self.assertTrue(Census.objects.filter(voting_id=500, voter_id=123).exists())
-        self.assertTrue(Census.objects.filter(voting_id=500, voter_id=456).exists())
-'''
+        self.assertTrue(Census.objects.filter(voting_id=TEST_VOTING_ID, voter_id=23).exists())
+        self.assertTrue(Census.objects.filter(voting_id=TEST_VOTING_ID, voter_id=24).exists())
+
+    def test_import_invalid_csv(self):
+        with open('census/test_files/census_with_duplicates.csv', 'rb') as file:
+            file_content = file.read()
+
+        test_file = SimpleUploadedFile("testcensus.csv", file_content, content_type="text/csv")
+
+        # Envío del archivo CSV a través de una solicitud POST
+        response = self.client.post('/census/import_csv/', {'csv_file': test_file, 'voting_id': TEST_VOTING_ID})
+
+        # Verificar la respuesta y el estado de la base de datos
+        self.assertContains(response, "Census imported successfully.")
+        
+        # Asegurarse de que se importaron solo 4 votantes únicos
+        unique_voters = Census.objects.filter(voting_id=TEST_VOTING_ID).count()
+        self.assertEqual(unique_voters, 4)
+        self.assertTrue(Census.objects.filter(voting_id=TEST_VOTING_ID, voter_id=1).exists())
+        self.assertTrue(Census.objects.filter(voting_id=TEST_VOTING_ID, voter_id=2).exists())
+        self.assertTrue(Census.objects.filter(voting_id=TEST_VOTING_ID, voter_id=3).exists())
+        self.assertTrue(Census.objects.filter(voting_id=TEST_VOTING_ID, voter_id=4).exists())
