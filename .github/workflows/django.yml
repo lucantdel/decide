@@ -1,14 +1,15 @@
 name: Python application
 
-on: [push]
-  
+on:
+  push:
+  pull_request:
 
 jobs:
   build:
     strategy:
       matrix:
-        pyversion: ['3.10.12','3.11']
-        postgresversion: ['14.9', '15']
+        python-version: ['3.10', '3.11']
+        postgresversion: ['14', '15']
 
     runs-on: ubuntu-latest
 
@@ -21,36 +22,49 @@ jobs:
           POSTGRES_DB: decide
         ports:
           - 5432:5432
-        # needed because the postgres container does not provide a healthcheck
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Python ${{matrix.pyversion}}
+
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
-        python-version: ${{matrix.pyversion}}
-    - name: psycopg2 prerequisites
-      run: sudo apt-get install libpq-dev
-    - name: Install dependencies and config
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache Python dependencies
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies and configure
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install codacy-coverage
         cp decide/local_settings.gactions.py decide/local_settings.py
-    - name: Run migrations (unnecessary)
+
+    - name: Run migrations
       run: |
         cd decide
         python manage.py migrate
+
     - name: Run tests
       run: |
         cd decide
-        coverage run --branch --source=. ./manage.py test  --keepdb 
-        coverage xml 
+        coverage run --branch --source=. manage.py test --keepdb
+        coverage report
+        coverage xml
+
     - name: Codacy Coverage Reporter
       uses: codacy/codacy-coverage-reporter-action@v1
       with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           coverage-reports: decide/coverage.xml 
+          
     - name: Check Commit Format
       run: ./check_commit_format.sh
