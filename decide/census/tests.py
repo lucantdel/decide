@@ -1,11 +1,13 @@
 import random
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import TestCase, Client
 from .forms import ReuseCensusForm
 from rest_framework.test import APIClient
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.urls import reverse
-
+from django.core.files.uploadedfile import SimpleUploadedFile
+from io import StringIO
+import csv
 
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -242,3 +244,59 @@ class ReuseCensusViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'reuse.html')
         self.assertContains(response, "Error: Se proporcionó un ID no numérico.")
+
+class CensusExportCSVTest(TestCase):
+    def setUp(self):
+        super().setUp()
+        self.census = Census(voting_id=100, voter_id=100)
+        self.census.save()
+
+    def tearDown(self):
+        super().tearDown()
+        self.census = None
+
+    def test_export_csv_existing_census(self):
+        response = self.client.get('/census/' + str(100) + '/export_csv/', format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['content-type'], 'text/csv')
+
+        # Leer el contenido de la respuesta y convertirlo a una lista de líneas no vacías
+        content = response.content.decode('utf-8')
+        lines = [line.strip() for line in content.split('\n') if line.strip()]
+
+        # Comprobar si el contenido del CSV es correcto
+        self.assertEqual(len(lines), 2)  # Asegurarse de que hay dos líneas (encabezado y un dato)
+        self.assertEqual(lines[0], 'voter_id')  # Comprobar el encabezado
+        self.assertEqual(lines[1], '100')  # Comprobar el valor de voter_id
+
+    def test_export_csv_not_existing_census(self):
+        response = self.client.get('/census/' + str(101) + '/export_csv/', format='json')
+        self.assertEqual(response.status_code, 404)
+
+    def test_export_csv_not_invalid_id(self):
+        response = self.client.get('/census/' + 'abc' + '/export_csv/', format='json')
+        self.assertEqual(response.status_code, 404)
+'''  
+class CensusImportCSVTest(TestCase):
+
+    def test_import_csv(self):
+    
+        # Crear un CSV de prueba en memoria
+        csv_data = StringIO()
+        writer = csv.writer(csv_data)
+        writer.writerow(['voter_id'])  # Encabezado, si es necesario
+        writer.writerow([123])         # Datos de prueba
+        writer.writerow([456])
+        csv_data.seek(0)  # Regresar al inicio del stream
+
+        # Crear un archivo falso para simular la subida de un archivo
+        csv_file = SimpleUploadedFile("test.csv", csv_data.getvalue().encode('utf-8'), content_type="text/csv")
+
+        # Envío del archivo CSV a través de una solicitud POST
+        response = self.client.post('census/import_csv', {'csv_file': csv_file, 'voting_id': 500})
+
+        # Verificar la respuesta y el estado de la base de datos
+        self.assertContains(response, "Census imported successfully.")
+        self.assertTrue(Census.objects.filter(voting_id=500, voter_id=123).exists())
+        self.assertTrue(Census.objects.filter(voting_id=500, voter_id=456).exists())
+'''
