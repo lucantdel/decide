@@ -1,9 +1,9 @@
 ---
 name: Feature request
-about: Sugiere una idea para este proyecto
+about: Sugerir una idea para este proyecto
 title: ''
 labels: ''
-assignees: lucantdel
+assignees: ''
 
 ---
 
