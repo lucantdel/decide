@@ -10,6 +10,8 @@ from django.shortcuts import  render
 from .models import CustomUser
 from django.contrib.auth.hashers import make_password
 
+from django.core.mail import send_mail
+
 class RegisterUserView(APIView):
     def get(self, request):
         return render(request, "register.html")
@@ -41,8 +43,21 @@ class RegisterUserView(APIView):
             hashed_pwd = make_password(pwd)
             user = CustomUser(username=username, email=email, password=hashed_pwd)
             user.save()
+            
         except IntegrityError:
             return Response({}, status=HTTP_400_BAD_REQUEST)
         register_success = "Se ha creado correctamente su cuenta"
+        enviar_correo_confirmacion(email)
         return render(request, "register.html", {"register_success": register_success})
+    
+def enviar_correo_confirmacion(user_email):
+    # Customize this function to suit your email content and settings
+    subject = 'Confirmación de Registro'
+    message = f'Gracias por registrarse!'
+    from_email = 'egc-rivera-register@outlook.es'
+    recipient_list = [user_email]
+
+    send_mail(subject, message, from_email, recipient_list)
+
+
 
