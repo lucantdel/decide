@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views import View
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -29,8 +29,10 @@ from rest_framework.status import (
         HTTP_204_NO_CONTENT as ST_204,
         HTTP_400_BAD_REQUEST as ST_400,
         HTTP_401_UNAUTHORIZED as ST_401,
-        HTTP_409_CONFLICT as ST_409
+        HTTP_409_CONFLICT as ST_409,
+        HTTP_404_NOT_FOUND as ST_404,
 )
+
 
 class CensusExportCSV(generics.ListAPIView):
     #permission_classes = (UserIsStaff,)
@@ -38,6 +40,10 @@ class CensusExportCSV(generics.ListAPIView):
     def list(self, request, *args, **kwargs):
         voting_id = self.kwargs['voting_id']
 
+        # Verificar si existe una votación con el ID proporcionado
+        if not Census.objects.filter(voting_id=voting_id).exists():
+            raise Http404(f"No se encontró votación con el ID {voting_id}")
+        
         voters = Census.objects.filter(voting_id=voting_id).values_list('voter_id', flat=True)
 
         # Crear el objeto HttpResponse con el tipo de contenido adecuado para un archivo CSV
@@ -48,7 +54,7 @@ class CensusExportCSV(generics.ListAPIView):
         writer = csv.writer(response)
 
         # Escribir la fila de encabezados si es necesario
-        #writer.writerow(['voter_id'])
+        writer.writerow(['voter_id'])
 
         # Escribir los datos en filas
         for voter_id in voters:
@@ -68,18 +74,17 @@ class CensusImportCSV(generics.ListAPIView):
         # Procesar el archivo CSV utilizando csv.reader
         csv_reader = csv.reader(csv_file.read().decode('utf-8').splitlines())
 
+        # Ignora la primera fila si tiene encabezado
+        next(csv_reader)
+
         # Itera sobre las filas del CSV y guárdalas en la base de datos
         for row in csv_reader:
-            # Ignora la primera fila si tiene encabezado
-            if not row[0].isdigit():
-                next(csv_reader)
-                
             # Suponiendo que tu archivo CSV tiene una columna: voter_id
             voter_id = row[0]  # Ajusta el índice según la posición de la columna en tu CSV
 
             # Verifica si la entrada ya existe para evitar duplicados
             if not Census.objects.filter(voting_id=voting_id, voter_id=voter_id).exists():
-                Census.objects.create(voting_id=voting_id, voter_id=voter_id)
+                Census.objects.create(voting_id=voting_id, voter_id=voter_id,born_date=None,gender=None,city=None)
 
         return HttpResponse("Census imported successfully.")
 

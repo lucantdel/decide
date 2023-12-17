@@ -5,6 +5,7 @@ from .forms import ReuseCensusForm
 from rest_framework.test import APIClient
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.urls import reverse
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 
 from selenium import webdriver
@@ -17,9 +18,8 @@ from .models import Census
 from base import mods
 from base.tests import BaseTestCase
 from datetime import datetime
-from django.core.files.uploadedfile import SimpleUploadedFile
 
-
+TEST_VOTING_ID=100
 
 class CensusTestCase(BaseTestCase):
 
@@ -242,3 +242,77 @@ class ReuseCensusViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'reuse.html')
         self.assertContains(response, "Error: Se proporcionó un ID no numérico.")
+
+class CensusExportCSVTest(TestCase):
+    def setUp(self):
+        super().setUp()
+        self.census = Census(voting_id=100, voter_id=100)
+        self.census.save()
+
+    def tearDown(self):
+        super().tearDown()
+        self.census = None
+
+    def test_export_csv_existing_census(self):
+        response = self.client.get('/census/' + str(100) + '/export_csv/', format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['content-type'], 'text/csv')
+
+        # Leer el contenido de la respuesta y convertirlo a una lista de líneas no vacías
+        content = response.content.decode('utf-8')
+        lines = [line.strip() for line in content.split('\n') if line.strip()]
+
+        # Comprobar si el contenido del CSV es correcto
+        self.assertEqual(len(lines), 2)  # Asegurarse de que hay dos líneas (encabezado y un dato)
+        self.assertEqual(lines[0], 'voter_id')  # Comprobar el encabezado
+        self.assertEqual(lines[1], '100')  # Comprobar el valor de voter_id
+
+    def test_export_csv_not_existing_census(self):
+        response = self.client.get('/census/' + str(101) + '/export_csv/', format='json')
+        self.assertEqual(response.status_code, 404)
+
+    def test_export_csv_invalid_id(self):
+        response = self.client.get('/census/' + 'abc' + '/export_csv/', format='json')
+        self.assertEqual(response.status_code, 404)
+
+class CensusImportCSVTest(TestCase):
+
+    def setUp(self):
+        super().setUp()
+    
+    def tearDown(self):
+        super().tearDown()
+
+    def test_import_valid_csv(self):
+        with open('census/test_files/valid_census.csv', 'rb') as file:  # Modo 'rb' para lectura binaria
+            file_content = file.read()
+        
+        test_file = SimpleUploadedFile("testcensus.csv", file_content, content_type="text/csv")
+
+        # Envío del archivo CSV a través de una solicitud POST
+        response = self.client.post('/census/import_csv/', {'csv_file': test_file, 'voting_id': TEST_VOTING_ID})
+
+        # Verificar la respuesta y el estado de la base de datos
+        self.assertContains(response, "Census imported successfully.")
+        self.assertTrue(Census.objects.filter(voting_id=TEST_VOTING_ID, voter_id=23).exists())
+        self.assertTrue(Census.objects.filter(voting_id=TEST_VOTING_ID, voter_id=24).exists())
+
+    def test_import_invalid_csv(self):
+        with open('census/test_files/census_with_duplicates.csv', 'rb') as file:
+            file_content = file.read()
+
+        test_file = SimpleUploadedFile("testcensus.csv", file_content, content_type="text/csv")
+
+        # Envío del archivo CSV a través de una solicitud POST
+        response = self.client.post('/census/import_csv/', {'csv_file': test_file, 'voting_id': TEST_VOTING_ID})
+
+        # Verificar la respuesta y el estado de la base de datos
+        self.assertContains(response, "Census imported successfully.")
+        
+        # Asegurarse de que se importaron solo 4 votantes únicos
+        unique_voters = Census.objects.filter(voting_id=TEST_VOTING_ID).count()
+        self.assertEqual(unique_voters, 4)
+        self.assertTrue(Census.objects.filter(voting_id=TEST_VOTING_ID, voter_id=1).exists())
+        self.assertTrue(Census.objects.filter(voting_id=TEST_VOTING_ID, voter_id=2).exists())
+        self.assertTrue(Census.objects.filter(voting_id=TEST_VOTING_ID, voter_id=3).exists())
+        self.assertTrue(Census.objects.filter(voting_id=TEST_VOTING_ID, voter_id=4).exists())
