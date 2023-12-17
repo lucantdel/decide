@@ -1,4 +1,4 @@
-from python:3.9-alpine
+from python:3.10-alpine
 
 RUN apk add --no-cache git postgresql-dev gcc libc-dev
 RUN apk add --no-cache gcc g++ make libffi-dev python3-dev build-base
@@ -10,13 +10,13 @@ RUN pip install ipython
 
 WORKDIR /app
 
-RUN git clone https://github.com/decide-update-4-1/decide-update-4.1.git .
+RUN git clone --single-branch --branch master https://github.com/lucantdel/decide-part-rivera.git .
 RUN pip install -r requirements.txt
 
 WORKDIR /app/decide
 
 # local settings.py
-ADD docker-settings.py /app/decide/local_settings.py
+ADD docker-settings.py /app/decide/local_settings.py 
 
 RUN ./manage.py collectstatic
 
