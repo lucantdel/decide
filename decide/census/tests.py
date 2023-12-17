@@ -114,9 +114,9 @@ class CensusExportationXML(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'text/html; charset=utf-8')
 
-        # Verifica la presencia del enlace generado por Django en lugar de escribir la URL manualmente
-        expected_link = f'<a href="{reverse("export-to-xml")}">Export to XML</a>'
-        self.assertIn(expected_link, response.content.decode())    
+        # Verifica la presencia del botón en lugar del enlace
+        expected_button = '<button onclick="window.location.href=\'/census/export-to-xml/\'">Export to XML</button>'
+        self.assertIn(expected_button, response.content.decode())   
 
 class CensusImportationXML(TestCase):
     def setUp(self):
