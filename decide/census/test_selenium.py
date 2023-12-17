@@ -1,11 +1,13 @@
-from django.test import TestCase
 from base.tests import BaseTestCase
 from .models import Census
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import time, os
+
 
 class ReuseCensusSeleniumTest(StaticLiveServerTestCase):
     def setUp(self):
@@ -48,3 +50,40 @@ class ReuseCensusSeleniumTest(StaticLiveServerTestCase):
         self.driver.get(self.live_server_url + '/census/')
         success_message = self.driver.find_element(By.TAG_NAME, 'td').text
         self.assertTrue(success_message,"1")
+
+class TestExportCensusCSV(StaticLiveServerTestCase):
+
+    def setUp(self):
+        self.base = BaseTestCase()
+        self.base.setUp()
+        options = webdriver.ChromeOptions()
+        options.headless = True
+        self.driver = webdriver.Chrome(options=options)
+        super().setUp()
+
+    def tearDown(self):
+        self.driver.quit()
+        self.base.tearDown()
+        super().tearDown()
+    
+    def test_empty_id(self):
+        self.driver.get(self.live_server_url + "/census/")
+        self.driver.set_window_size(1850, 1053)
+        self.driver.find_element(By.LINK_TEXT, "Exportar Censo CSV").click()
+        self.driver.find_element(By.CSS_SELECTOR, "button:nth-child(4)").click()  # Boton de previsualizar
+
+        # Esperar y manejar la alerta
+        WebDriverWait(self.driver, 10).until(EC.alert_is_present())
+        alert = self.driver.switch_to.alert
+        self.assertEqual("Por favor, introduce un valor para el ID.", alert.text)
+        alert.accept()  # Aceptar la alerta
+
+        # Proceder con la siguiente acción después de manejar la alerta
+        self.driver.find_element(By.CSS_SELECTOR, "button:nth-child(5)").click()  # Boton de exportar
+
+        # Manejar la segunda alerta si es necesario
+        WebDriverWait(self.driver, 10).until(EC.alert_is_present())
+        alert = self.driver.switch_to.alert
+        self.assertEqual("Por favor, introduce un valor para el ID.", alert.text)
+        alert.accept()  # Aceptar la alerta
+
