@@ -16,14 +16,6 @@ class VotingView(generics.ListCreateAPIView):
     serializer_class = VotingSerializer
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     filterset_fields = ('id', )
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        campo_personalizable = self.kwargs.get('campo_personalizable')
-        if campo_personalizable:
-            queryset = queryset.filter(campo_personalizable=campo_personalizable)
-        return queryset
-
-    
 
     def get(self, request, *args, **kwargs):
         idpath = kwargs.get('voting_id')
@@ -31,7 +23,7 @@ class VotingView(generics.ListCreateAPIView):
         version = request.version
         if version not in settings.ALLOWED_VERSIONS:
             version = settings.DEFAULT_VERSION
-        if version == 'v2':
+        if version == 'v2': 
             self.serializer_class = SimpleVotingSerializer
 
         return super().get(request, *args, **kwargs)
@@ -39,7 +31,7 @@ class VotingView(generics.ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         self.permission_classes = (UserIsStaff,)
         self.check_permissions(request)
-        for data in ['name', 'desc', 'question', 'question_opt','postproc_type', 'number_seats']:
+        for data in ['name', 'desc', 'question', 'question_opt']:
             if not data in request.data:
                 return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -48,11 +40,8 @@ class VotingView(generics.ListCreateAPIView):
         for idx, q_opt in enumerate(request.data.get('question_opt')):
             opt = QuestionOption(question=question, option=q_opt, number=idx)
             opt.save()
-            postproc_type = request.data.get('postproc_type')
-            number_seats = request.data.get('number_seats')
         voting = Voting(name=request.data.get('name'), desc=request.data.get('desc'),
-                question=question,postproc_type=postproc_type,
-                number_seats=number_seats)
+                question=question)
         voting.save()
 
         auth, _ = Auth.objects.get_or_create(url=settings.BASEURL,
