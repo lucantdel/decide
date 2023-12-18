@@ -116,20 +116,49 @@
 
         <!-- Voting -->
         <div v-if="!signup">
-            <h1>[[ voting.id ]] - [[ voting.name ]]</h1>
-            <h2>[[ voting.question.desc ]]</h2>
-            <form v-for="opt in voting.question.options" :key="opt.number">
-                <div class="form-group">
-                    <input type="radio" v-model="selected"
-                                :id="'q' + opt.number"
-                                name="question"
-                                :value="opt.number">
-                        [[ opt.option ]]
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="card-title display-3">Voting ID: [[ voting.id ]]</h1>
+                    <h2 class="card-subtitle mb-3 display-4">[[ voting.name ]]</h2>
+                    <p class="card-text">[[ voting.question.desc ]]</p>
+
+                    <div v-if="voting.question.type === 'C'" class="mb-3">
+                        <div class="d-flex flex-wrap justify-content-center">
+                            <form v-for="opt in voting.question.options" :key="opt.number">
+                                <div class="form-check form-check-inline">
+                                    <input type="radio" v-model="selected" :id="'q' + opt.number"
+                                        class="form-check-input" name="question" :value="opt.number">
+                                    <label class="form-check-label" :for="'q' + opt.number">[[ opt.option ]]</label>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="d-flex justify-content-center mt-3">
+                            <button class="btn btn-primary btn-lg" @click="decideSend($event,'')">
+                                {{ 'Vote' }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div v-else-if="voting.question.type === 'M'" class="mb-3">
+                        <div class="d-flex flex-wrap justify-content-center">
+                            <form v-for="opt in voting.question.options" :key="opt.number">
+                                <div class="form-check form-check-inline">
+                                    <input type="checkbox" :id="'q' + opt.number" class="form-check-input" 
+                                        :name="'q' + opt.number" :value="opt.number" :checked="chosenOptions.includes(opt.number)"
+                                        @change="toggleSelection(opt.number)">
+                                    <label class="form-check-label" :for="'q' + opt.number">[[ opt.option ]]</label>
+
+                                </div>
+                            </form>
+                        </div>
+                        <div class="d-flex justify-content-center mt-3">
+                            <button class="btn btn-primary btn-lg" @click="submitMultiple($event,'')">
+                                {{ 'Vote' }}
+                            </button>
+                        </div>
+                    </div>
                 </div>
-            </form>
-            <button class="btn btn-primary mt-3" v-on:click="decideSend">
-                {% trans "Vote" %}
-            </button>
+            </div>
         </div>
 
     </div>
@@ -180,7 +209,8 @@
                         g: BigInt.fromJSONObject(voting.pub_key.g.toString()),
                         y: BigInt.fromJSONObject(voting.pub_key.y.toString()),
                     },
-                    keybits: {{ KEYBITS }}
+                    keybits: {{ KEYBITS }},
+                    chosenOptions: []
                 }
             },
             beforeMount() {
@@ -266,6 +296,44 @@
                     var v = this.decideEncrypt();
                     var data = {
                         vote: {a: v.alpha.toString(), b: v.beta.toString()},
+                        voting: this.voting.id,
+                        voter: this.user.id,
+                        token: this.token
+                    }
+                    this.postData("{% url "gateway" "store" "/" %}", data)
+                        .then(data => {
+                            this.successVote = true;
+                            this.alertShow = false;
+                            this.showAlert("success", '{% trans "Congratulations. Your vote has been sent" %}');
+                        })
+                        .catch(error => {
+                            this.succesVote = false;
+                            this.showAlert("danger", '{% trans "Error: " %}' + error);
+                        });
+                },
+                toggleSelection(evt) {
+                    const i = this.chosenOptions.indexOf(evt);
+                    if (i > -1) {
+                        this.chosenOptions.splice(i, 1);
+                    } else {
+                        this.chosenOptions.push(evt);
+                    }
+                },
+                decideEncryptMultiple() {
+                    var encryptedVotes = []
+                    for (opt of this.chosenOptions) {
+                        var bigmsg = BigInt.fromJSONObject(opt.toString());
+                        var cipher = ElGamal.encrypt(this.bigpk, bigmsg);
+                        var vote = {a: cipher.alpha.toString(), b: cipher.beta.toString()}
+                        encryptedVotes.push(vote);
+                    }
+                    return encryptedVotes;
+                },
+                submitMultiple(evt) {
+                    evt.preventDefault();
+                    var votes = this.decideEncryptMultiple();
+                    var data = {
+                        votes: votes,
                         voting: this.voting.id,
                         voter: this.user.id,
                         token: this.token

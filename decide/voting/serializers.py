@@ -11,10 +11,17 @@ class QuestionOptionSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class QuestionSerializer(serializers.HyperlinkedModelSerializer):
-    options = QuestionOptionSerializer(many=True)
+    options = serializers.SerializerMethodField()
+    def get_options(self, instance):
+        if instance.type == 'C':
+            serializer = QuestionOptionSerializer(instance.options.all(), many=True).data
+        elif instance.type == 'M':
+            serializer = QuestionOptionSerializer(instance.options.all(), many=True).data
+        return serializer
+
     class Meta:
         model = Question
-        fields = ('desc', 'options')
+        fields = ('desc', 'options', 'type')
 
 
 class VotingSerializer(serializers.HyperlinkedModelSerializer):
