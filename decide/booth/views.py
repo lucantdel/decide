@@ -13,11 +13,9 @@ class BoothView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         vid = kwargs.get('voting_id', 0)
-        campo_personalizable = kwargs.get('campo_personalizable', None)
         
         try:
             r = mods.get('voting', params={'id': vid})
-            r = mods.get('voting', params={'campo_personalizable': campo_personalizable})
             # Casting numbers to string to manage in javascript with BigInt
             # and avoid problems with js and big number conversion
             for k, v in r[0]['pub_key'].items():
