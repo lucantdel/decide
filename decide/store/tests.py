@@ -92,7 +92,7 @@ class StoreChoiceCase(BaseTestCase):
         response = self.client.post('/store/', data, format='json')
         self.assertEqual(response.status_code, 401)
 
-    def test_store_vote(self):
+    def test_store_vote_classic(self):
         VOTING_PK = 345
         CTE_A = 96
         CTE_B = 184
@@ -114,6 +114,44 @@ class StoreChoiceCase(BaseTestCase):
         self.assertEqual(Vote.objects.first().voter_id, 1)
         self.assertEqual(Vote.objects.first().a, CTE_A)
         self.assertEqual(Vote.objects.first().b, CTE_B)
+
+    def test_store_vote_choices(self):
+        CTE_A = 96
+        CTE_B = 184
+        census = Census(voting_id=self.voting_choices.id, voter_id=1)
+        census.save()
+        data = {
+            "voting": self.voting_choices.id,
+            "voter": 1,
+            "votes": [{ "a": CTE_A, "b": CTE_B }, { "a": CTE_A + 10, "b": CTE_B + 10 }],
+            'voting_type': 'choices'
+        }
+        user = self.get_or_create_user(1)
+        self.login(user=user.username)
+        response = self.client.post('/store/', data, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(Vote.objects.count(), 2)
+        self.assertEqual(Vote.objects.first().voting_id, self.voting_choices.id)
+        self.assertEqual(Vote.objects.first().voter_id, 1)
+        self.assertEqual(Vote.objects.filter(a=CTE_A).values()[0]['a'], CTE_A)
+        self.assertEqual(Vote.objects.filter(b=CTE_B).values()[0]['b'], CTE_B)
+        self.assertEqual(Vote.objects.filter(a=CTE_A + 10).values()[0]['a'], CTE_A + 10)
+        self.assertEqual(Vote.objects.filter(b=CTE_B + 10).values()[0]['b'], CTE_B + 10)
+
+    def test_voting_invalid_type(self):
+        census = Census(voting_id=self.voting_choices.id, voter_id=2)
+        census.save()
+        data = {
+            "voting": self.voting_choices.id,
+            "voter": 1,
+            "vote": { "a": 1, "b": 1 },
+            'voting_type': 'invalid'
+        }
+        user = self.get_or_create_user(2)
+        self.login(user=user.username)
+        response = self.client.post('/store/', data, format='json')
+        self.assertEqual(response.status_code, 400)
 
     def test_vote(self):
         self.gen_votes()

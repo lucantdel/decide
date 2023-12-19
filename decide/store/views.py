@@ -31,8 +31,7 @@ def classic_store(request):
   vote = request.data.get('vote')
   if not vid or not uid or not vote:
       return status.HTTP_400_BAD_REQUEST
-    
-  # validating voter
+    # validating voter
   if request.auth:
       token = request.auth.key
   else:
@@ -70,19 +69,16 @@ def choices_store(request):
   voting = mods.get('voting', params={'id': vid})
   if not voting or not isinstance(voting, list):
       return status.HTTP_401_UNAUTHORIZED
-  print("llega")
   start_date = voting[0].get('start_date', None)
   end_date = voting[0].get('end_date', None)
   not_started = not start_date or timezone.now() < parse_datetime(start_date)
   is_closed = end_date and parse_datetime(end_date) < timezone.now()
   if not_started or is_closed:
       return status.HTTP_401_UNAUTHORIZED
-  print("llega")
   uid = request.data.get('voter')
   votes = request.data.get('votes')
   if not vid or not uid or not votes:
       return status.HTTP_400_BAD_REQUEST
-  print("llega")
   # validating voter
   if request.auth:
       token = request.auth.key
@@ -92,7 +88,6 @@ def choices_store(request):
   voter_id = voter.get('id', None)
   if not voter_id or voter_id != uid:
       return status.HTTP_401_UNAUTHORIZED
-  print("llega")
   # the user is in the census
   perms = mods.get('census/{}'.format(vid), params={'voter_id': uid}, response=True)
   if perms.status_code == 401:
@@ -100,8 +95,8 @@ def choices_store(request):
   
   vote = Vote.objects.filter(voter_id=uid, voting_id=vid).first()
 
-  if vote != None:
-      Vote.objects.filter(voter_id=uid, voting_id=vid).delete()  
+  if vote is not None:
+      Vote.objects.filter(voter_id=uid, voting_id=vid).delete()
 
   for v in votes:
     a = v.get("a")
