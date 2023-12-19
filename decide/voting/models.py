@@ -9,6 +9,14 @@ from base.models import Auth, Key
 
 class Question(models.Model):
     desc = models.TextField()
+    TYPES = [
+            ('C', 'Pregunta clásica'),
+            ('M', 'Pregunta multirrespuesta')
+            ]
+    type = models.CharField(max_length=1, choices=TYPES, default='C')
+
+    def save(self):
+        super().save()
 
     def __str__(self):
         return self.desc
@@ -22,10 +30,15 @@ class QuestionOption(models.Model):
     def save(self):
         if not self.number:
             self.number = self.question.options.count() + 2
+        if self.question.type in ['C','M']:
+            return super().save()
         return super().save()
 
     def __str__(self):
-        return '{} ({})'.format(self.option, self.number)
+        if self.question.type in ['C','M']:
+            return '{} ({})'.format(self.option, self.number)
+        else:
+            return 'Solo puedes crear opciones para preguntas clásicas o multirrespuesta'
 
 
 class Voting(models.Model):
@@ -35,7 +48,6 @@ class Voting(models.Model):
 
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
-
     pub_key = models.OneToOneField(Key, related_name='voting', blank=True, null=True, on_delete=models.SET_NULL)
     auths = models.ManyToManyField(Auth, related_name='votings')
 
@@ -77,9 +89,7 @@ class Voting(models.Model):
         '''
         The tally is a shuffle and then a decrypt
         '''
-
         votes = self.get_votes(token)
-
         auth = self.auths.first()
         shuffle_url = "/shuffle/{}/".format(self.id)
         decrypt_url = "/decrypt/{}/".format(self.id)
@@ -131,3 +141,4 @@ class Voting(models.Model):
 
     def __str__(self):
         return self.name
+

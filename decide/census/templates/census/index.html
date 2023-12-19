@@ -3,6 +3,7 @@
 {% block extrahead %}
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">   
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 {% endblock %}
 
@@ -10,18 +11,24 @@
 {% block content %}
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="navbar-nav">
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-controls="bs-example-navbar-collapse-1" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <a class="nav-item nav-link active" href="/admin/census/census/add/">Crear Censo</a>
-        <a class="nav-item nav-link active" href="/census/import_csv">Importar Censo CSV</a>
-        <a class="nav-item nav-link active" href="/census/export_csv">Exportar Censo CSV</a>
-        <a class="nav-item nav-link active" href="/census/importar-xml/">Importar Censo XML</a>
-        <a class="nav-item nav-link active" href="/census/descargar-xml/">Exportar Censo XML</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            <li class="nav-item active"><a class="nav-link" href="/admin/census/census/add/">Crear Censo</a></li>
+            <li class="nav-item"><a class="nav-link" href="/census/import_csv">Importar Censo CSV</a></li>
+            <li class="nav-item"><a class="nav-link" href="/census/export_csv">Exportar Censo CSV</a></li>
+            <li class="nav-item"><a class="nav-link" href="/census/importar-xml/">Importar Censo XML</a></li>
+            <li class="nav-item"><a class="nav-link" href="/census/descargar-xml/">Exportar Censo XML</a></li>
+            <li class="nav-item"><a class="nav-link" href="/census/reuse/">Reuso de censos</a></li>
+        </ul>
     </div>
 </nav>
-
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
 <div class="container mt-5">
     

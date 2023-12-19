@@ -13,7 +13,7 @@
             height: 100vh;
             background-color:  rgb(208, 232, 242);
         }
-        a {
+        button {
             display: inline-block;
             padding: 10px 20px;
             color: #fff;
@@ -22,8 +22,9 @@
             border-radius: 5px;
             font-size: 30px;
             font-weight: bold;
+            cursor: pointer;
         }
-        a:hover {
+        button:hover {
             background-color: #0056b3;
         }
         .top-right {
@@ -38,7 +39,7 @@
 </head>
 
 <body>
-    <a href="{% url 'export-to-xml' %}">Export to XML</a>
+    <button onclick="window.location.href='/census/export-to-xml/'">Export to XML</button>
     <div class="top-right">DECIDE</div>
 </body>
 </html>

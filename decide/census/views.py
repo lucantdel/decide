@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.db.utils import IntegrityError
 from django.shortcuts import render
 from django.views.generic import TemplateView
@@ -5,12 +6,13 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views import View
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import render, get_object_or_404, redirect
+from .forms import ReuseCensusForm
 from base.perms import UserIsStaff
 import csv
 from .models import Census
@@ -27,8 +29,10 @@ from rest_framework.status import (
         HTTP_204_NO_CONTENT as ST_204,
         HTTP_400_BAD_REQUEST as ST_400,
         HTTP_401_UNAUTHORIZED as ST_401,
-        HTTP_409_CONFLICT as ST_409
+        HTTP_409_CONFLICT as ST_409,
+        HTTP_404_NOT_FOUND as ST_404,
 )
+
 
 class CensusExportCSV(generics.ListAPIView):
     #permission_classes = (UserIsStaff,)
@@ -36,6 +40,10 @@ class CensusExportCSV(generics.ListAPIView):
     def list(self, request, *args, **kwargs):
         voting_id = self.kwargs['voting_id']
 
+        # Verificar si existe una votación con el ID proporcionado
+        if not Census.objects.filter(voting_id=voting_id).exists():
+            raise Http404(f"No se encontró votación con el ID {voting_id}")
+        
         voters = Census.objects.filter(voting_id=voting_id).values_list('voter_id', flat=True)
 
         # Crear el objeto HttpResponse con el tipo de contenido adecuado para un archivo CSV
@@ -46,7 +54,7 @@ class CensusExportCSV(generics.ListAPIView):
         writer = csv.writer(response)
 
         # Escribir la fila de encabezados si es necesario
-        #writer.writerow(['voter_id'])
+        writer.writerow(['voter_id'])
 
         # Escribir los datos en filas
         for voter_id in voters:
@@ -66,18 +74,17 @@ class CensusImportCSV(generics.ListAPIView):
         # Procesar el archivo CSV utilizando csv.reader
         csv_reader = csv.reader(csv_file.read().decode('utf-8').splitlines())
 
+        # Ignora la primera fila si tiene encabezado
+        next(csv_reader)
+
         # Itera sobre las filas del CSV y guárdalas en la base de datos
         for row in csv_reader:
-            # Ignora la primera fila si tiene encabezado
-            if not row[0].isdigit():
-                next(csv_reader)
-                
             # Suponiendo que tu archivo CSV tiene una columna: voter_id
             voter_id = row[0]  # Ajusta el índice según la posición de la columna en tu CSV
 
             # Verifica si la entrada ya existe para evitar duplicados
             if not Census.objects.filter(voting_id=voting_id, voter_id=voter_id).exists():
-                Census.objects.create(voting_id=voting_id, voter_id=voter_id)
+                Census.objects.create(voting_id=voting_id, voter_id=voter_id,born_date=None,gender=None,city=None)
 
         return HttpResponse("Census imported successfully.")
 
@@ -86,22 +93,24 @@ class CensusImportCSV(generics.ListAPIView):
 
 class CensusImportationFromXML(View):
     def post(self, request, *args, **kwargs):
-        xml_file = request.FILES['xml_file']
+        try:
+            xml_file = request.FILES['xml_file']
+            # Parse el archivo XML
+            tree = ET.parse(xml_file)
+            root = tree.getroot()
 
-        # Parse el archivo XML
-        tree = ET.parse(xml_file)
-        root = tree.getroot()
+            # Itera sobre las entradas del censo y guárdalas en la base de datos
+            for entry_element in root.findall('entry'):
+                voting_id = entry_element.find('voting_id').text
+                voter_id = entry_element.find('voter_id').text
 
-        # Itera sobre las entradas del censo y guárdalas en la base de datos
-        for entry_element in root.findall('entry'):
-            voting_id = entry_element.find('voting_id').text
-            voter_id = entry_element.find('voter_id').text
+                # Verifica si la entrada ya existe para evitar duplicados
+                if not Census.objects.filter(voting_id=voting_id, voter_id=voter_id).exists():
+                    Census.objects.create(voting_id=voting_id, voter_id=voter_id)
 
-            # Verifica si la entrada ya existe para evitar duplicados
-            if not Census.objects.filter(voting_id=voting_id, voter_id=voter_id).exists():
-                Census.objects.create(voting_id=voting_id, voter_id=voter_id)
-
-        return HttpResponse("Census imported successfully.")
+            return HttpResponse("Census imported successfully.")
+        except ET.ParseError:
+            return JsonResponse({'error': 'Error importing census. Invalid XML format.'}, status=400)
 
     def get(self, request, *args, **kwargs):
         return render(request, 'import_xml.html')
@@ -185,3 +194,40 @@ class CensusDetail(generics.RetrieveDestroyAPIView):
         except ObjectDoesNotExist:
             return Response('Invalid voter', status=ST_401)
         return Response('Valid voter')
+
+
+def reuse_census_view(request):
+    if request.method == 'POST':
+        form = ReuseCensusForm(request.POST)
+        if form.is_valid():
+            reuse_voting_ids = form.cleaned_data['id_to_reuse']
+            new_voting = form.cleaned_data['new_id']
+
+            if reuse_voting_ids:
+                reuse_voting_ids = reuse_voting_ids.split(',')
+                reuse_voting_ids = [id_.strip() for id_ in reuse_voting_ids if id_.strip()]
+
+                try:
+                    if not all(Census.objects.filter(voting_id=int(id_)).exists() for id_ in reuse_voting_ids):
+                        messages.error(request, "No existen censos para todos los IDs proporcionados para reutilizar.")
+                        return render(request, 'reuse.html', {'form': form})
+                except ValueError:
+                    messages.error(request, "Error: Se proporcionó un ID no numérico.")
+                    return render(request, 'reuse.html', {'form': form})
+
+                for reuse_voting_id in reuse_voting_ids:
+                    for census in Census.objects.filter(voting_id=reuse_voting_id):
+                        if not Census.objects.filter(voting_id=new_voting, voter_id=census.voter_id).exists():
+                            re_census = Census()
+                            re_census.voting_id = new_voting                    
+                            re_census.voter_id = census.voter_id
+                            re_census.save()
+                
+                messages.success(request, f"Censos reutilizados con IDs: {', '.join(reuse_voting_ids)}")
+                return redirect('home')
+            else:
+                messages.error(request, "Error: Formulario no válido. Asegúrate de ingresar IDs válidos.")
+    else:
+        form = ReuseCensusForm()
+
+    return render(request, 'reuse.html', {'form': form})

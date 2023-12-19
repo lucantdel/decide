@@ -27,6 +27,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 ALLOWED_HOSTS = ['*']
+CORS_ALLOWED_ORIGINS = ['http://localhost:8080'] # CORS
+CORS_ALLOW_ALL_ORIGINS = True
+
 
 
 # Application definition
@@ -63,6 +66,7 @@ MODULES = [
     'authentication',
     'base',
     'booth',
+    'customuser',
     'census',
     'mixnet',
     'postproc',
@@ -75,6 +79,7 @@ BASEURL = 'http://localhost:8000'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware', # CORS
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -88,7 +93,7 @@ ROOT_URLCONF = 'decide.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'decide/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -158,6 +163,7 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 # number of bits for the key, all auths should use the same number of bits
 KEYBITS = 256
@@ -181,3 +187,24 @@ if os.path.exists("config.jsonnet"):
 
 
 INSTALLED_APPS = INSTALLED_APPS + MODULES
+
+# Use the SMTP email backend
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+# Outlook/Office 365 SMTP settings
+EMAIL_HOST = 'smtp.office365.com'
+EMAIL_PORT = 587  # Use port 587 for STARTTLS
+EMAIL_USE_TLS = True  # Use TLS for encryption
+
+# Your Outlook/Office 365 email credentials
+EMAIL_HOST_USER = 'egc-rivera-register@outlook.es'
+EMAIL_HOST_PASSWORD = 'decidepass123'
+
+# Default "from" address for emails
+DEFAULT_FROM_EMAIL = 'egc-rivera-register@outlook.es'
+
+# Server email address for sending server error messages
+SERVER_EMAIL = 'egc-rivera-register@outlook.es'
+
+# Optional: Email subject prefix
+EMAIL_SUBJECT_PREFIX = 'decide-part-rivera Registro - ' 
