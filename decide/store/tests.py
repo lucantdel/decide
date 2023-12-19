@@ -21,34 +21,34 @@ class StoreChoiceCase(BaseTestCase):
 
     def setUp(self):
         super().setUp()
-        self.question = Question(desc='qwerty', type='C')
+        self.question_classic = Question(desc='qwerty', type='C')
         self.question_choices = Question(desc='qwerty', type='M')
-        self.question.save()
+        self.question_classic.save()
         self.question_choices.save()
 
-        self.question.save()
-        self.voting = Voting(pk=5001,
+        self.question_classic.save()
+        self.voting_classic = Voting(pk=5001,
                              name='example setup',
-                             question=self.question,
+                             question=self.question_classic,
                              start_date=timezone.now(),
         )
         self.voting_choices = Voting(pk=5002,
                              name='example setup text',
                              question=self.question_choices,
                              start_date=timezone.now(),)
-        self.voting.save()
+        self.voting_classic.save()
         self.voting_choices.save()
 
     def tearDown(self):
-        self.question = None
+        self.question_classic = None
         self.question_choices = None
-        self.voting = None
+        self.voting_classic = None
         self.voting_choices = None
 
         super().tearDown()
 
     def gen_voting(self, pk):
-        voting = Voting(pk=pk, name='v1', desc="v1 desc", question=self.question, start_date=timezone.now(),
+        voting = Voting(pk=pk, name='v1', desc="v1 desc", question=self.question_classic, start_date=timezone.now(),
                 end_date=timezone.now() + datetime.timedelta(days=1))
         voting.save()
 
@@ -118,26 +118,26 @@ class StoreChoiceCase(BaseTestCase):
     def test_store_vote_choices(self):
         CTE_A = 96
         CTE_B = 184
+        user = self.get_or_create_user(1)
         census = Census(voting_id=self.voting_choices.id, voter_id=1)
         census.save()
         data = {
             "voting": self.voting_choices.id,
             "voter": 1,
-            "votes": [{ "a": CTE_A, "b": CTE_B }, { "a": CTE_A + 10, "b": CTE_B + 10 }],
+            "votes": [{ "a": CTE_A, "b": CTE_B }, { "a": CTE_A + 11, "b": CTE_B + 11 }],
             'voting_type': 'choices'
         }
-        user = self.get_or_create_user(1)
         self.login(user=user.username)
         response = self.client.post('/store/', data, format='json')
         self.assertEqual(response.status_code, 200)
-
         self.assertEqual(Vote.objects.count(), 2)
         self.assertEqual(Vote.objects.first().voting_id, self.voting_choices.id)
         self.assertEqual(Vote.objects.first().voter_id, 1)
         self.assertEqual(Vote.objects.filter(a=CTE_A).values()[0]['a'], CTE_A)
         self.assertEqual(Vote.objects.filter(b=CTE_B).values()[0]['b'], CTE_B)
-        self.assertEqual(Vote.objects.filter(a=CTE_A + 10).values()[0]['a'], CTE_A + 10)
-        self.assertEqual(Vote.objects.filter(b=CTE_B + 10).values()[0]['b'], CTE_B + 10)
+        self.assertEqual(Vote.objects.filter(a=CTE_A + 11).values()[0]['a'], CTE_A + 11)
+        self.assertEqual(Vote.objects.filter(b=CTE_B + 11).values()[0]['b'], CTE_B + 11)
+        
 
     def test_voting_invalid_type(self):
         census = Census(voting_id=self.voting_choices.id, voter_id=2)
@@ -227,23 +227,23 @@ class StoreChoiceCase(BaseTestCase):
         census = Census(voting_id=5001, voter_id=1)
         census.save()
         # not opened
-        self.voting.start_date = timezone.now() + datetime.timedelta(days=1)
-        self.voting.save()
+        self.voting_classic.start_date = timezone.now() + datetime.timedelta(days=1)
+        self.voting_classic.save()
         user = self.get_or_create_user(1)
         self.login(user=user.username)
         response = self.client.post('/store/', data, format='json')
         self.assertEqual(response.status_code, 401)
 
         # not closed
-        self.voting.start_date = timezone.now() - datetime.timedelta(days=1)
-        self.voting.save()
-        self.voting.end_date = timezone.now() + datetime.timedelta(days=1)
-        self.voting.save()
+        self.voting_classic.start_date = timezone.now() - datetime.timedelta(days=1)
+        self.voting_classic.save()
+        self.voting_classic.end_date = timezone.now() + datetime.timedelta(days=1)
+        self.voting_classic.save()
         response = self.client.post('/store/', data, format='json')
         self.assertEqual(response.status_code, 200)
 
         # closed
-        self.voting.end_date = timezone.now() - datetime.timedelta(days=1)
-        self.voting.save()
+        self.voting_classic.end_date = timezone.now() - datetime.timedelta(days=1)
+        self.voting_classic.save()
         response = self.client.post('/store/', data, format='json')
         self.assertEqual(response.status_code, 401)

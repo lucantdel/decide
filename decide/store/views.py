@@ -40,7 +40,7 @@ def classic_store(request):
   voter_id = voter.get('id', None)
   if not voter_id or voter_id != uid:
       return status.HTTP_401_UNAUTHORIZED
-  # the user is in the census
+    # the user is in the census
   perms = mods.get('census/{}'.format(vid), params={'voter_id': uid}, response=True)
   if perms.status_code == 401:
       return status.HTTP_401_UNAUTHORIZED
@@ -54,7 +54,6 @@ def classic_store(request):
   v.a = a
   v.b = b
   v.save()
-  
   return status.HTTP_200_OK
 
 
@@ -79,7 +78,7 @@ def choices_store(request):
   votes = request.data.get('votes')
   if not vid or not uid or not votes:
       return status.HTTP_400_BAD_REQUEST
-  # validating voter
+    # validating voter
   if request.auth:
       token = request.auth.key
   else:
@@ -88,7 +87,7 @@ def choices_store(request):
   voter_id = voter.get('id', None)
   if not voter_id or voter_id != uid:
       return status.HTTP_401_UNAUTHORIZED
-  # the user is in the census
+    # the user is in the census
   perms = mods.get('census/{}'.format(vid), params={'voter_id': uid}, response=True)
   if perms.status_code == 401:
       return status.HTTP_401_UNAUTHORIZED
@@ -106,8 +105,7 @@ def choices_store(request):
     voteDB.a = a
     voteDB.b = b
     voteDB.save()
-  
-    return status.HTTP_200_OK
+  return status.HTTP_200_OK
 
 VOTING_TYPES = {
   'choices': choices_store,

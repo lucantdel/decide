@@ -221,7 +221,7 @@ class VotingTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 400)
 
         data = {
-          'name': 'Example',
+            'name': 'Example',
             'desc': 'Description example',
             'question': {
                 'desc': 'I want a ',

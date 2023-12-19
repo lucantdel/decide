@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
-from voting.models import Question, Voting, QuestionOption, Auth
+from voting.models import Question, Voting, QuestionOption
 from mixnet.models import Auth
 
 class MultirrQuestionBoothTest(StaticLiveServerTestCase):
