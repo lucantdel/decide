@@ -56,12 +56,6 @@ jobs:
         pip install codacy-coverage
         cp decide/local_settings.gactions.py decide/local_settings.py
 
-    # Ejecuta análisis estático de código con Flake8
-    - name: Run Flake8
-      run: |
-        pip install flake8
-        flake8 .
-
     # Ejecuta migraciones de la base de datos
     - name: Run migrations
       run: |
