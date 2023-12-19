@@ -93,22 +93,24 @@ class CensusImportCSV(generics.ListAPIView):
 
 class CensusImportationFromXML(View):
     def post(self, request, *args, **kwargs):
-        xml_file = request.FILES['xml_file']
+        try:
+            xml_file = request.FILES['xml_file']
+            # Parse el archivo XML
+            tree = ET.parse(xml_file)
+            root = tree.getroot()
 
-        # Parse el archivo XML
-        tree = ET.parse(xml_file)
-        root = tree.getroot()
+            # Itera sobre las entradas del censo y guárdalas en la base de datos
+            for entry_element in root.findall('entry'):
+                voting_id = entry_element.find('voting_id').text
+                voter_id = entry_element.find('voter_id').text
 
-        # Itera sobre las entradas del censo y guárdalas en la base de datos
-        for entry_element in root.findall('entry'):
-            voting_id = entry_element.find('voting_id').text
-            voter_id = entry_element.find('voter_id').text
+                # Verifica si la entrada ya existe para evitar duplicados
+                if not Census.objects.filter(voting_id=voting_id, voter_id=voter_id).exists():
+                    Census.objects.create(voting_id=voting_id, voter_id=voter_id)
 
-            # Verifica si la entrada ya existe para evitar duplicados
-            if not Census.objects.filter(voting_id=voting_id, voter_id=voter_id).exists():
-                Census.objects.create(voting_id=voting_id, voter_id=voter_id)
-
-        return HttpResponse("Census imported successfully.")
+            return HttpResponse("Census imported successfully.")
+        except ET.ParseError:
+            return JsonResponse({'error': 'Error importing census. Invalid XML format.'}, status=400)
 
     def get(self, request, *args, **kwargs):
         return render(request, 'import_xml.html')
