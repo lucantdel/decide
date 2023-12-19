@@ -56,6 +56,12 @@ jobs:
         pip install codacy-coverage
         cp decide/local_settings.gactions.py decide/local_settings.py
 
+    # Ejecuta análisis estático de código con Flake8
+    - name: Run Flake8
+      run: |
+        pip install flake8
+        flake8 .
+
     # Ejecuta migraciones de la base de datos
     - name: Run migrations
       run: |
@@ -73,7 +79,8 @@ jobs:
     # Construye la imagen Docker de la aplicación
     - name: Build Docker Image
       run: |
-        docker build -t lucantdel/decide-part-rivera:${{ github.sha }} -f docker/Dockerfile .
+        cd docker
+        docker build -t lucantdel/decide-part-rivera:${{ github.sha }} .
 
     # Inicia sesión en Docker Hub para subir imágenes
     - name: Docker Login
