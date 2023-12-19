@@ -17,24 +17,38 @@ from voting.models import Question
 from voting.models import Voting
 
 
-class StoreTextCase(BaseTestCase):
+class StoreChoiceCase(BaseTestCase):
 
     def setUp(self):
         super().setUp()
-        self.question = Question(desc='qwerty')
+        self.question = Question(desc='qwerty', type='C')
+        self.question_choices = Question(desc='qwerty', type='M')
+        self.question.save()
+        self.question_choices.save()
+
         self.question.save()
         self.voting = Voting(pk=5001,
-                             name='voting example',
+                             name='example setup',
                              question=self.question,
                              start_date=timezone.now(),
         )
+        self.voting_choices = Voting(pk=5002,
+                             name='example setup text',
+                             question=self.question_choices,
+                             start_date=timezone.now(),)
         self.voting.save()
+        self.voting_choices.save()
 
     def tearDown(self):
+        self.question = None
+        self.question_choices = None
+        self.voting = None
+        self.voting_choices = None
+
         super().tearDown()
 
     def gen_voting(self, pk):
-        voting = Voting(pk=pk, name='v1', question=self.question, start_date=timezone.now(),
+        voting = Voting(pk=pk, name='v1', desc="v1 desc", question=self.question, start_date=timezone.now(),
                 end_date=timezone.now() + datetime.timedelta(days=1))
         voting.save()
 
@@ -46,11 +60,11 @@ class StoreTextCase(BaseTestCase):
         return user
 
     def gen_votes(self):
-        votings = [random.randint(1, 5000) for i in range(10)]
-        users = [random.randint(3, 5002) for i in range(50)]
+        votings = [random.randint(1, 3000) for i in range(10)]
+        users = [random.randint(3, 3002) for i in range(50)]
         for v in votings:
-            a = random.randint(2, 500)
-            b = random.randint(2, 500)
+            a = random.randint(2, 300)
+            b = random.randint(2, 300)
             self.gen_voting(v)
             random_user = random.choice(users)
             user = self.get_or_create_user(random_user)
@@ -60,11 +74,11 @@ class StoreTextCase(BaseTestCase):
             data = {
                 "voting": v,
                 "voter": random_user,
-                "vote": { "a": a, "b": b }
+                "vote": { "a": a, "b": b },
+                "voting_type": 'classic',
             }
             response = self.client.post('/store/', data, format='json')
             self.assertEqual(response.status_code, 200)
-
         self.logout()
         return votings, users
 
@@ -72,7 +86,8 @@ class StoreTextCase(BaseTestCase):
         data = {
             "voting": 1,
             "voter": 1,
-            "vote": { "a": 1, "b": 1 }
+            "vote": { "a": 1, "b": 1 },
+            "voting_type": 'classic',
         }
         response = self.client.post('/store/', data, format='json')
         self.assertEqual(response.status_code, 401)
@@ -87,13 +102,13 @@ class StoreTextCase(BaseTestCase):
         data = {
             "voting": VOTING_PK,
             "voter": 1,
-            "vote": { "a": CTE_A, "b": CTE_B }
+            "vote": { "a": CTE_A, "b": CTE_B },
+            "voting_type": 'classic',
         }
         user = self.get_or_create_user(1)
         self.login(user=user.username)
         response = self.client.post('/store/', data, format='json')
         self.assertEqual(response.status_code, 200)
-
         self.assertEqual(Vote.objects.count(), 1)
         self.assertEqual(Vote.objects.first().voting_id, VOTING_PK)
         self.assertEqual(Vote.objects.first().voter_id, 1)
@@ -168,7 +183,8 @@ class StoreTextCase(BaseTestCase):
         data = {
             "voting": 5001,
             "voter": 1,
-            "vote": { "a": 30, "b": 55 }
+            "vote": { "a": 30, "b": 55 },
+            "voting_type": "classic"
         }
         census = Census(voting_id=5001, voter_id=1)
         census.save()
