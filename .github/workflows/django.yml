@@ -73,7 +73,7 @@ jobs:
     # Construye la imagen Docker de la aplicación
     - name: Build Docker Image
       run: |
-        docker build -t lucantdel/decide-part-rivera:${{ github.sha }} .
+        docker build -t lucantdel/decide-part-rivera:${{ github.sha }} -f docker/Dockerfile .
 
     # Inicia sesión en Docker Hub para subir imágenes
     - name: Docker Login
