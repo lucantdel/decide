@@ -81,9 +81,11 @@
                 $.ajax({
                     url: url,
                     method: 'GET',
+                    dataType: 'text',  // Asegúrate de que este sea el tipo de datos correcto
                     success: function(data) {
                         // Mostrar el contenido del CSV en la pre etiqueta
                         $('#csvPreview').text(data);
+                        console.log(data);
                     },
                     error: function() {
                         alert('Error al obtener el archivo CSV.');
