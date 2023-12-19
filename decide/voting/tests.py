@@ -39,13 +39,13 @@ class VotingTestCase(BaseTestCase):
         k.k = ElGamal.construct((p, g, y))
         return k.encrypt(msg)
 
-    def create_voting(self):
-        q = Question(desc='test question')
+    def create_voting_classic(self):
+        q = Question(desc='test question classic', type='C')
         q.save()
         for i in range(5):
             opt = QuestionOption(question=q, option='option {}'.format(i+1))
             opt.save()
-        v = Voting(name='test voting', question=q)
+        v = Voting(name='example voting', question=q)
         v.save()
 
         a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
@@ -70,7 +70,7 @@ class VotingTestCase(BaseTestCase):
         user.save()
         return user
 
-    def store_votes(self, v):
+    def store_votes_classic(self, v):
         voters = list(Census.objects.filter(voting_id=v.id))
         voter = voters.pop()
 
@@ -83,6 +83,7 @@ class VotingTestCase(BaseTestCase):
                     'voting': v.id,
                     'voter': voter.voter_id,
                     'vote': { 'a': a, 'b': b },
+                    'voting_type': 'classic',
                 }
                 clear[opt.number] += 1
                 user = self.get_or_create_user(voter.voter_id)
@@ -92,14 +93,14 @@ class VotingTestCase(BaseTestCase):
         return clear
 
     def test_complete_voting(self):
-        v = self.create_voting()
+        v = self.create_voting_classic()
         self.create_voters(v)
 
         v.create_pubkey()
         v.start_date = timezone.now()
         v.save()
 
-        clear = self.store_votes(v)
+        clear = self.store_votes_classic(v)
 
         self.login()  # set token
         v.tally_votes(self.token)
@@ -140,7 +141,7 @@ class VotingTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 201)
 
     def test_update_voting(self):
-        voting = self.create_voting()
+        voting = self.create_voting_classic()
 
         data = {'action': 'start'}
         #response = self.client.post('/voting/{}/'.format(voting.pk), data, format='json')
