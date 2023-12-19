@@ -118,12 +118,13 @@
         <div v-if="!signup">
             <div class="card">
                 <div class="card-body">
-                    <h1 class="card-title display-3">Voting ID: [[ voting.id ]]</h1>
-                    <h2 class="card-subtitle mb-3 display-4">[[ voting.name ]]</h2>
+                    <h1 class="card-title display-7">Voting ID: [[ voting.id ]]</h1>
+                    <br>
+                    <h2 class="card-subtitle mb-3 display-9">[[ voting.name ]]</h2>
                     <p class="card-text">[[ voting.question.desc ]]</p>
 
                     <div v-if="voting.question.type === 'C'" class="mb-3">
-                        <div class="d-flex flex-wrap justify-content-center">
+                        <div class="d-flex justify-content-center">
                             <form v-for="opt in voting.question.options" :key="opt.number">
                                 <div class="form-check form-check-inline">
                                     <input type="radio" v-model="selected" :id="'q' + opt.number"
@@ -140,7 +141,7 @@
                     </div>
 
                     <div v-else-if="voting.question.type === 'M'" class="mb-3">
-                        <div class="d-flex flex-wrap justify-content-center">
+                        <div class="d-flex justify-content-center">
                             <form v-for="opt in voting.question.options" :key="opt.number">
                                 <div class="form-check form-check-inline">
                                     <input type="checkbox" :id="'q' + opt.number" class="form-check-input" 
@@ -298,7 +299,8 @@
                         vote: {a: v.alpha.toString(), b: v.beta.toString()},
                         voting: this.voting.id,
                         voter: this.user.id,
-                        token: this.token
+                        token: this.token,
+                        voting_type: 'classic'
                     }
                     this.postData("{% url "gateway" "store" "/" %}", data)
                         .then(data => {
@@ -336,7 +338,8 @@
                         votes: votes,
                         voting: this.voting.id,
                         voter: this.user.id,
-                        token: this.token
+                        token: this.token,
+                        voting_type: 'choices'
                     }
                     this.postData("{% url "gateway" "store" "/" %}", data)
                         .then(data => {

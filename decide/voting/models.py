@@ -10,7 +10,7 @@ from base.models import Auth, Key
 class Question(models.Model):
     desc = models.TextField()
     TYPES = [
-            ('C', 'Pregunta clasica'),
+            ('C', 'Pregunta clásica'),
             ('M', 'Pregunta multirrespuesta')
             ]
     type = models.CharField(max_length=1, choices=TYPES, default='C')
