@@ -138,7 +138,6 @@ class StoreChoiceCase(BaseTestCase):
         self.assertEqual(Vote.objects.filter(a=CTE_A + 11).values()[0]['a'], CTE_A + 11)
         self.assertEqual(Vote.objects.filter(b=CTE_B + 11).values()[0]['b'], CTE_B + 11)
         
-
     def test_voting_invalid_type(self):
         census = Census(voting_id=self.voting_choices.id, voter_id=2)
         census.save()
