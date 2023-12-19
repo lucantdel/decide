@@ -116,7 +116,6 @@ class CensusExportationXML(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'text/html; charset=utf-8')
 
-        # Verifica la presencia del botón en lugar del enlace
         expected_button = '<button onclick="window.location.href=\'/census/export-to-xml/\'">Export to XML</button>'
         self.assertIn(expected_button, response.content.decode())   
 
