@@ -86,3 +86,24 @@ class TestExportCensusCSV(StaticLiveServerTestCase):
         self.assertEqual("Por favor, introduce un valor para el ID.", alert.text)
         alert.accept()  # Aceptar la alerta
 
+class TestExportCensusXML(StaticLiveServerTestCase):
+
+    def setUp(self):
+        self.base = BaseTestCase()
+        self.base.setUp()
+        options = webdriver.ChromeOptions()
+        options.headless = True
+        self.driver = webdriver.Chrome(options=options)
+        super().setUp()
+
+    def tearDown(self):
+        self.driver.quit()
+        self.base.tearDown()
+        super().tearDown()
+
+    def test_export(self):
+        self.driver.get(self.live_server_url + "/census/")
+        self.driver.set_window_size(1850, 1053)
+        self.driver.find_element(By.LINK_TEXT, "Exportar Censo XML").click()
+        boton_export = self.driver.find_element(By.TAG_NAME, "button").text
+        self.assertTrue(boton_export,"Export to XML")

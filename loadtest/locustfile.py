@@ -69,6 +69,12 @@ class DefExportCensusCSV(TaskSet):
     def index(self):
         self.client.get("/census/{0}/export_csv/".format(CENSUS))
 
+class DefExportCensusXML(TaskSet):
+
+    @task
+    def export_censo_xml(self):
+        self.client.get("/census/export-to-xml/")
+
 class Visualizer(HttpUser):
     host = HOST
     tasks = [DefVisualizer]
@@ -83,3 +89,10 @@ class ExportCensusCSV(HttpUser):
     host = HOST
     tasks = [DefExportCensusCSV]
     wait_time= between(3,5)
+
+class ExportCensusXML(HttpUser):
+    host = HOST
+    tasks = [DefExportCensusXML]
+    wait_time= between(3,5)
+
+
